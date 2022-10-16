@@ -1,6 +1,3 @@
-// contracts/MBSContract.sol
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -16,17 +13,20 @@ contract USDGToken is ERC20 {
         admin = msg.sender;
     }
 
+
     function multiply(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require(y == 0 || (z = x * y) / y == x);
     }
 
-    function blackList(address _user) public onlyOwner {
+    function blackList(address _user) public  {
+        require(msg.sender == admin, "only admin or treasury");
         require(!isBlacklisted[_user], "user already blacklisted");
         isBlacklisted[_user] = true;
     }
 
-    function removeFromBlacklist(address _user) public onlyOwner {
-        require(isBlacklisted[_user], "user already whitelisted");
+    function removeFromBlacklist(address _user) public {
+        require(msg.sender == admin, "only admin or treasury");
+        require(isBlacklisted[_user], "user not blacklisted");
         isBlacklisted[_user] = false;
     }
 
@@ -36,7 +36,7 @@ contract USDGToken is ERC20 {
         override
         returns (bool)
     {
-        require(!isBlacklisted[_to], "Recipient is backlisted");
+        require(!isBlacklisted[to], "Recipient is backlisted");
         address owner = _msgSender();
         _transfer(owner, to, amount);
         return true;

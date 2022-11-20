@@ -1,24 +1,24 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./erc20/permit/ERC20Permit.sol";
 
-contract USDGToken is ERC20 {
+/** 
+ @title  Gypsy E2E Transparent Fiat-Stablecoin
+ @notice This contract is used by Gypsy to bridge fiat into a fiat stablecoin. 
+		This token is designed to be backed and pegged to the USD.
+*/
+
+contract USDGToken is ERC20Permit {
+	address public admin;
     mapping(address => bool) isBlacklisted;
-    address public admin;
-
+	
     event Mint(address _from, address indexed _to, uint256 _value);
     event Burn(address indexed _from, uint256 _value);
 
-    constructor() ERC20("USDGContract", "USDG") {
+    constructor() ERC20Permit("USDGContract", "USDG",6) {
         admin = msg.sender;
     }
-
-
-    function multiply(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require(y == 0 || (z = x * y) / y == x);
-    }
-
-
 
     function blackList(address _user) public  {
         require(msg.sender == admin, "only admin or treasury");
@@ -39,23 +39,30 @@ contract USDGToken is ERC20 {
         returns (bool)
     {
         require(!isBlacklisted[to], "Recipient is backlisted");
-        address owner = _msgSender();
+        address owner = msg.sender;
         _transfer(owner, to, amount);
         return true;
     }
 
     function mint(address to, uint256 amount) public virtual returns (bool) {
-        require(msg.sender == admin, "only admin or treasury");
-        uint256 newAmount = multiply(amount, 10**18);
-        _mint(to, newAmount);
-        emit Mint(msg.sender, to, newAmount);
+        //require(msg.sender == admin, "only admin or treasury");
+
+        _mint(to, amount);
+        emit Mint(msg.sender, to, amount);
         return true;
     }
 
     function burn(uint256 amount) public virtual returns (bool) {
-        uint256 newAmount = multiply(amount, 10**18);
-        _burn(msg.sender, newAmount);
-        emit Burn(msg.sender, newAmount);
+
+        _burn(msg.sender, amount);
+        emit Burn(msg.sender, amount);
         return true;
+    }
+
+   	//====================
+	//safe math
+	//====================
+    function multiply(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        require(y == 0 || (z = x * y) / y == x);
     }
 }

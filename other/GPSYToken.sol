@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "./token/Token.sol";
@@ -17,9 +18,7 @@ contract GPSYToken is Token {
      *  emits an `IdentityRegistryAdded` event
      *  emits a `ComplianceAdded` event
      */
-	constructor() Token(_identityRegistry ) {
-       
-    }
+	
 
    
 }

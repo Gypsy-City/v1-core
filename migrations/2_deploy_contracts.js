@@ -1,18 +1,23 @@
 const USDGToken = artifacts.require("../contracts/USDGToken.sol");
 const GPSYToken = artifacts.require("../contracts/TestGPSY.sol");
 const HomeNFT = artifacts.require("../contracts/HomeNFT.sol");
+const REIT = artifacts.require("../contracts/REIT.sol");
 const LGPSYToken = artifacts.require("../contracts/LGPSYToken.sol");
 
 module.exports = async function (deployer, network, accounts) {
+  //ACCOUNTS
+  const owner = accounts[0];
+  const REIT_OPERATIONS = accounts[3];
+  const REIT_PROFIT = accounts[4];
   console.log("======Starting deployment======");
   let USDGTokenContract = await deployer.deploy(USDGToken, {
-    from: accounts[0],
+    from: owner,
   });
 
   console.log("Deployed USDG:", USDGToken.address);
 
   let GPSYTokenContract = await deployer.deploy(GPSYToken, {
-    from: accounts[0],
+    from: owner,
   });
 
   console.log("Deployed GPSY:", GPSYToken.address);
@@ -21,7 +26,7 @@ module.exports = async function (deployer, network, accounts) {
     HomeNFT,
     GPSYToken.address,
     USDGToken.address,
-    { from: accounts[0] }
+    { from: owner }
   );
   console.log("Deployed HomeNFT:", HomeNFT.address);
   //string memory name_, string memory symbol_, address owner_, address asset_, uint256 precision_
@@ -30,15 +35,30 @@ module.exports = async function (deployer, network, accounts) {
     LGPSYToken,
     "Staked Gypsy",
     "sGPSY",
-    accounts[0],
-    GPSYTokenContract.address,
+    owner,
+    GPSYToken.address,
     18,
     {
-      from: accounts[0],
+      from: owner,
     }
   );
 
-  console.log("Deployed LGPSY:", LGPSYTokenContract.address);
+  console.log("Deployed LGPSYToken:", LGPSYToken.address);
+
+  let REITContract = await deployer.deploy(
+    REIT,
+    USDGToken.address,
+    GPSYToken.address,
+    LGPSYToken.address,
+    HomeNFT.address,
+    REIT_OPERATIONS,
+    REIT_PROFIT,
+    {
+      from: owner,
+    }
+  );
+
+  console.log("Deployed REIT:", REIT.address);
 
   console.log("======Finished deployment======");
 };

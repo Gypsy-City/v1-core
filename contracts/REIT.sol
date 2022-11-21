@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "./TestGPSY.sol";
 import "./USDGToken.sol";
@@ -31,12 +32,14 @@ REIT REQUIREMENTS
 contract REIT  {
 	address public admin;
 
+	//Wallet connections
+	address public operations_wallet; //The REIT operating wallet (Buys, upgrades, and maintains properties)
+	address public profits_wallet; //The REIT wallet for profit. This is the 10% profit that a REIT can keep.
+
 	//REIT connections
 	address public stablecoin; //the way renters pay for the rent
 	address public reit_share; //the share of the REIT. 
 	address public reit_share_vault; //Pays dividends in new shares of the REIT. Pays 90% of profit
-	address public reit_operations_wallet; //The REIT operating wallet (Buys, upgrades, and maintains properties)
-	address public reit_profits_wallet; //The REIT wallet for profit. This is the 10% profit that a REIT can keep.
 	address public reit_homes_nft; //The NFT collection that has all the homes
 
 	//REIT connection contracts;
@@ -69,8 +72,8 @@ contract REIT  {
 		stablecoin = _stablecoin;
 		reit_share = _reit_share;
 		reit_share_vault = _reit_share_vault;
-		reit_operations_wallet = _reit_operations_wallet;
-		reit_profits_wallet = _reit_profits_wallet;
+		operations_wallet = _reit_operations_wallet;
+		profits_wallet = _reit_profits_wallet;
 		reit_homes_nft =_reit_homes_nft;
 
 		//make contract objects
@@ -98,12 +101,33 @@ contract REIT  {
 
     /// @notice Distributes profits to staked investors and gypsy
 	/// @dev Called by Gypsy
-	function sendDividend()public{
-		
+	function sendDividend()public returns(uint256){
+
+		//Sends 10% of the profits to the REIT
+		//Sends 90% of the profits to the investors
+	
+		uint256 balance_to_send = usdg_token.balanceOf(address(this));
+		uint256 balance_to_send_to_reit = SafeMath.div(balance_to_send,10);
+		uint256 balance_to_send_to_investor = balance_to_send-balance_to_send_to_reit;
+
+		//transfer to REIT
+		usdg_token.transfer(profits_wallet, balance_to_send_to_reit);
+
+		//transfer to investors (vault)
+		usdg_token.transfer(address(lgpsy_token), balance_to_send_to_investor);
+		return balance_to_send;
 	}
-   
+
     /// @notice gets the value of the home
 	function getNAV()public{
 		
+	}
+
+
+    /// @notice asks for money from the treasury for the operation wallet
+	function request(uint256 amount)public{
+		uint256 balance_to_send = usdg_token.balanceOf(address(this));
+		require(balance_to_send>=amount, "Insufficient Balance"); 
+		usdg_token.transfer(operations_wallet, amount);
 	}
 }

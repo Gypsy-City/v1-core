@@ -13,6 +13,7 @@ const HomeNFT = artifacts.require("HomeNFT");
 const TestGPSY = artifacts.require("TestGPSY");
 const USDGToken = artifacts.require("USDGToken");
 const LGPSYToken = artifacts.require("LGPSYToken");
+const REIT = artifacts.require("REIT");
 
 contract("LGPSYToken", async (accounts) => {
   const INITIAL_SUPPLY = "0";
@@ -21,15 +22,21 @@ contract("LGPSYToken", async (accounts) => {
   const HOME_DATA_URI =
     "https://bafybeievyhunzymva6pjfgnjuwsobhxxp3pb6fonxryn5wuvh65h7lthxe.ipfs.w3s.link/data.json";
 
-  let homeNft, gpsyToken, currentOwner, renter, investor, minter, gasAverage;
+  let homeNft,
+    gpsyToken,
+    currentOwner,
+    renter,
+    investor,
+    operations_wallet,
+    profit_wallet,
+    gasAverage;
 
   before(() => {
     currentOwner = accounts[0];
     renter = accounts[1];
     investor = accounts[2];
-
-    //    log(`currentOwner: [${currentOwner}]`);
-    //  log(`renter: [${renter}]`);
+    operations_wallet = accounts[3];
+    profit_wallet = accounts[4];
   });
 
   beforeEach(async function () {
@@ -48,8 +55,19 @@ contract("LGPSYToken", async (accounts) => {
       2
     );
 
+    reit = await REIT.new(
+      usdgToken.address,
+      gpsyToken.address,
+      lgpsyToken.address,
+      homeNft.address,
+      operations_wallet,
+      profit_wallet
+    );
+
+    await homeNft.setReit(reit.address);
+
     await homeNft.mint(
-      currentOwner,
+      lgpsyToken.address,
       HOME_DATA_URI,
       RENT_PRICE,
       HOME_PURCHASE_PRICE,
@@ -316,6 +334,7 @@ contract("LGPSYToken", async (accounts) => {
 
       //make sure the contract recieved the minted tokens
       let new_balance_in_vault = await gpsyToken.balanceOf(lgpsyToken.address);
+
       let expected_new_total_assets_in_vault = PROFIT_AMOUNT.add(STAKE_AMOUNT);
 
       expect(new_balance_in_vault).to.be.bignumber.equal(
@@ -529,17 +548,7 @@ contract("LGPSYToken", async (accounts) => {
 
       let actual_issuance_rate = await lgpsyToken.issuanceRate();
 
-      log(
-        `[${expected_issuance_rate}] --> expected_issuance_rate before rounding`
-      );
-
       expected_issuance_rate = Math.floor(expected_issuance_rate); //needs to round up whole number
-
-      log(
-        `[${expected_issuance_rate}] --> expected_issuance_rate after rounding`
-      );
-
-      log(`[${actual_issuance_rate}] --> actual_issuance_rate`);
 
       expect(new BN(expected_issuance_rate)).to.be.bignumber.equal(
         new BN(actual_issuance_rate)
@@ -553,25 +562,8 @@ contract("LGPSYToken", async (accounts) => {
         investor
       );
 
-      log(`[${actual_issuance_rate}] --> actual_issuance_rate`);
-
       let expected_withdraw_after_half_vesting_period =
         STAKE_AMOUNT.toNumber() + actual_issuance_rate * time.duration.weeks(2);
-
-      log(
-        `[${max_withdraw_after_half_vesting_period}] --> max_withdraw_after_half_vesting_period`
-      );
-
-      log(
-        `[${expected_withdraw_after_half_vesting_period}] --> expected_withdraw_after_half_vesting_period`
-      );
-
-      //gets withing 0.5% accurate
-      let percent_error =
-        Math.abs(
-          max_withdraw_after_half_vesting_period -
-            expected_withdraw_after_half_vesting_period
-        ) / expected_withdraw_after_half_vesting_period;
 
       //the example was off isuance by half of a second's amount so using percent error instead of exact.
       //this can probably be fixed

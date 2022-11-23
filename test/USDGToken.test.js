@@ -8,7 +8,7 @@ const USDGToken = artifacts.require("USDGToken");
 contract("USDGToken", async (accounts) => {
   const tokenName = "USDGContract";
   const tokenSymbol = "USDG";
-  const tokenDecimals = 2;
+  const tokenDecimals = 6;
   let token;
 
   beforeEach(async () => {

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./TestGPSY.sol";
 import "./USDGToken.sol";
-
+import "./REIT.sol";
 
 /** 
  @title  Gypsy Portfolio NFT collection
@@ -22,6 +22,7 @@ contract HomeNFT is ERC721URIStorage {
     address public admin; //the address that is able to add homes to the portfolio
     TestGPSY private gypsy_token; // the Gypsy Token Contract
 	USDGToken private usdg_token; // the USDG Token Contract
+	REIT private reit; // the REIT  Contract
 	
     mapping(uint256 => bool) isOccupied; //find if a house is occupied
 	mapping(uint256 => address) renter; //if the home is occupied then it is being rented. The renter pays the owner of the NFT for renting.
@@ -29,7 +30,7 @@ contract HomeNFT is ERC721URIStorage {
 	mapping(uint256 => uint256) price; //the price of each home (estimated by Parcl Price feeds)
 	mapping(uint256 => uint256) appraisal_price; //the price determined by appraisals
 	mapping(uint256 => uint256) purchase_price; //the price of the home by Gypsy
-   
+	
     /*////////////////////////////////////////////////////////
                       		Events
     ////////////////////////////////////////////////////////*/
@@ -56,6 +57,12 @@ contract HomeNFT is ERC721URIStorage {
         public
         returns (uint256)
     {
+		//mint tokens based on the backing price of GPSY
+		//get backing per GPSY & mint the correct amount
+		//uint256 backing = reit.backingPerShare();
+		//uint256 amntToMint = SafeMath.div(_purchase_price, backing);
+       //gypsy_token.mint(_owner, amntToMint);
+		//Mint the home
         _tokenIds.increment();
 
         uint256 newHomeId = _tokenIds.current();
@@ -69,9 +76,8 @@ contract HomeNFT is ERC721URIStorage {
 		purchase_price[newHomeId] = _purchase_price;
 		//set the appraisal price to the purchase price
 		appraisal_price[newHomeId] = _purchase_price;
-        //mint tokens based on the current price of GPSY
-        gypsy_token.mint(_owner, 1000);
-        return newHomeId;
+     
+        return 0;
     }
 
 
@@ -125,6 +131,10 @@ contract HomeNFT is ERC721URIStorage {
         return appraisal_price[homeID];
     }
 
+	function getReit() public view returns(address){
+		return address(reit);
+	}
+
 	/*////////////////////////////////////////////////////////
                       Setters
     ////////////////////////////////////////////////////////*/
@@ -149,6 +159,10 @@ contract HomeNFT is ERC721URIStorage {
 		emit  AppraisalChanged( homeID, old_appraisal_price, new_apprasial_price, msg.sender);
     }
 
+	function setReit(address _reit_contract) public{
+		reit = REIT(_reit_contract);
+	}
+	
    	//====================
 	//safe math
 	//====================

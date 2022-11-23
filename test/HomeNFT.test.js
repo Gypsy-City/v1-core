@@ -7,6 +7,8 @@ const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const HomeNFT = artifacts.require("HomeNFT");
 const TestGPSY = artifacts.require("TestGPSY");
 const USDGToken = artifacts.require("USDGToken");
+const REIT = artifacts.require("REIT");
+const LGPSYToken = artifacts.require("LGPSYToken");
 
 contract("HomeNFT", async (accounts) => {
   const INITIAL_SUPPLY = "0";
@@ -15,11 +17,23 @@ contract("HomeNFT", async (accounts) => {
   const HOME_DATA_URI =
     "https://bafybeievyhunzymva6pjfgnjuwsobhxxp3pb6fonxryn5wuvh65h7lthxe.ipfs.w3s.link/data.json";
 
-  let homeNft, gpsyToken, currentOwner, renter, user1, minter, gasAverage;
+  let homeNft,
+    gpsyToken,
+    currentOwner,
+    renter,
+    investor,
+    operations_wallet,
+    profit_wallet,
+    user1,
+    minter,
+    gasAverage;
 
   before(() => {
     currentOwner = accounts[0];
     renter = accounts[1];
+    investor = accounts[2];
+    operations_wallet = accounts[3];
+    profit_wallet = accounts[4];
   });
 
   beforeEach(async function () {
@@ -30,6 +44,25 @@ contract("HomeNFT", async (accounts) => {
     gpsyToken = await TestGPSY.new();
     usdgToken = await USDGToken.new();
     homeNft = await HomeNFT.new(gpsyToken.address, usdgToken.address);
+
+    lgpsyToken = await LGPSYToken.new(
+      "Staked GPSY",
+      "LGPSY",
+      currentOwner,
+      gpsyToken.address,
+      2
+    );
+
+    reit = await REIT.new(
+      usdgToken.address,
+      gpsyToken.address,
+      lgpsyToken.address,
+      homeNft.address,
+      operations_wallet,
+      profit_wallet
+    );
+
+    await homeNft.setReit(reit.address);
   });
 
   describe("constructor", async () => {
@@ -91,6 +124,11 @@ contract("HomeNFT", async (accounts) => {
       );
       expect(events.length).to.equal(0);
     });
+
+    it("initialized the REIT connection", async () => {
+      let get_reit_address = await homeNft.getReit();
+      expect(get_reit_address).to.equal(reit.address);
+    });
   });
 
   describe("mint a home to the portfolio", async () => {
@@ -104,7 +142,7 @@ contract("HomeNFT", async (accounts) => {
       );
       let count = await homeNft.count();
 
-      const value = new BN("1");
+      const value = new BN(1);
 
       expect(count).to.be.bignumber.equal(value);
 
@@ -113,27 +151,6 @@ contract("HomeNFT", async (accounts) => {
           gasAverage,
           tx.receipt.gasUsed
         )} ETH] --> fees of minting a new home to the homeNFT`
-      );
-    });
-
-    it("minting home creates correct amount of GPSY", async () => {
-      const tx = await homeNft.mint(
-        currentOwner,
-        HOME_DATA_URI,
-        RENT_PRICE,
-        HOME_PURCHASE_PRICE,
-        { from: currentOwner, gas: 5000000, gasPrice: 500000000 }
-      );
-
-      let gypsy_token_supply = await gpsyToken.totalSupply();
-
-      let expected_number = 1000;
-
-      const bn_expected_value = new BN(expected_number);
-      const bn_gypsy_token_supply_to_number = new BN(gypsy_token_supply);
-
-      expect(bn_gypsy_token_supply_to_number).to.be.bignumber.equal(
-        bn_expected_value
       );
     });
 
@@ -349,13 +366,6 @@ contract("HomeNFT", async (accounts) => {
 
       //owner of the house recieved the rent payment
       expect(balance_of_owner).to.be.bignumber.equal(new BN(RENT_PRICE));
-
-      log(
-        `[${calculateETH(
-          gasAverage,
-          tx.receipt.gasUsed
-        )} ETH] --> fees of paying rent`
-      );
     });
 
     it("renter pays rent and subtracts their usdg", async () => {
@@ -404,13 +414,6 @@ contract("HomeNFT", async (accounts) => {
 
       //owner of the house recieved the rent payment
       expect(balance_of_renter).to.be.bignumber.equal(new BN(0));
-
-      log(
-        `[${calculateETH(
-          gasAverage,
-          tx.receipt.gasUsed
-        )} ETH] --> fees of paying rent`
-      );
     });
   });
 });

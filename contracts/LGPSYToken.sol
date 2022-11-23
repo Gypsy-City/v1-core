@@ -6,15 +6,6 @@ import "./utils/ERC20Helper.sol";
 import "./erc4626/IRevenueDistributionToken.sol";
 import "./utils/SafeTransferLib.sol";
 
-/*
-    ██████╗ ██████╗ ████████╗
-    ██╔══██╗██╔══██╗╚══██╔══╝
-    ██████╔╝██║  ██║   ██║
-    ██╔══██╗██║  ██║   ██║
-    ██║  ██║██████╔╝   ██║
-    ╚═╝  ╚═╝╚═════╝    ╚═╝
-*/
-
 contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
 
     uint256 public immutable override precision;  // Precision of rates, equals max deposit amounts before rounding errors occur

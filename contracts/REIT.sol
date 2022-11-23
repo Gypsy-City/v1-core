@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 import "./TestGPSY.sol";
 import "./USDGToken.sol";
 import "./HomeNFT.sol";
@@ -16,8 +15,6 @@ import "./LGPSYToken.sol";
 
 To qualify as a REIT, a company must have the bulk of its assets and income connected to real estate
 investment and must distribute at least 90 percent of its taxable income to shareholders annually in the form of dividends.
-
-
 
 REIT REQUIREMENTS
 	-Be an entity that would be taxable as a corporation but for its REIT status
@@ -51,11 +48,9 @@ contract REIT  {
 	//REIT Financials
 	uint256 public revenue;
 	uint256 public operating_expense;
-	uint256 public nav;
 
 	//Balance sheet
 	uint256 public cash_and_short_term_investments;
-	uint256 public total_assets;
 	uint256 public total_liabilities;
 	uint256 public total_equity;
 
@@ -66,6 +61,13 @@ contract REIT  {
 	uint256 public cash_from_financing;
 	uint256 public net_change_in_cash;
 	uint256 public free_cash_flow;
+
+	/*////////////////////////////////////////////////////////
+                      		Events
+    ////////////////////////////////////////////////////////*/
+
+    event Dividend(uint256 balance_to_send_to_reit, uint256 balance_to_send_to_investor);
+    event Request(uint256 amount);
 
     constructor(address _stablecoin, address _reit_share, address _reit_share_vault, address _reit_homes_nft, address _reit_operations_wallet, address _reit_profits_wallet) {
         //set all contracts
@@ -88,24 +90,39 @@ contract REIT  {
 
     /// @notice Chooses to buy or mint GPSY based on price
 	/// @dev Called by investors
-	function invest() public{
+	function buy(uint256 gpsy_token_amounts) public {
 
-		//gets on-chain price
-		//gets backing per GPSY
+		uint256 houseCount = home_nft.count();
 
-		//if onChainPrice > backing
-		//Mint new GPSY @ backing
-		//else
-		//buy on-chain
+		if(houseCount == 0){
+			//price per token is $100
+			//make sure the person is able to pay for the tokens
+			uint256 usdg_amount = gpsy_token_amounts * 100;
+			uint256 allowance = usdg_token.allowance(msg.sender, address(this));
+			require(usdg_amount == allowance, "Please approve tokens before transferring");
+			usdg_token.transferFrom(msg.sender,address(this), usdg_amount);
+			//give them the tokens
+			gypsy_token.mint(msg.sender, gpsy_token_amounts);
+		}
+		else{
+			//gets on-chain price
+			//gets backing per GPSY
+
+			//if onChainPrice > backing
+			//Mint new GPSY @ backing
+			//else
+			//buy on-chain
+
+			//start each GPSY at $100
+		}
 	}
 
     /// @notice Distributes profits to staked investors and gypsy
 	/// @dev Called by Gypsy
 	function sendDividend()public returns(uint256){
-
 		//Sends 10% of the profits to the REIT
 		//Sends 90% of the profits to the investors
-	
+
 		uint256 balance_to_send = usdg_token.balanceOf(address(this));
 		uint256 balance_to_send_to_reit = SafeMath.div(balance_to_send,10);
 		uint256 balance_to_send_to_investor = balance_to_send-balance_to_send_to_reit;
@@ -115,19 +132,58 @@ contract REIT  {
 
 		//transfer to investors (vault)
 		usdg_token.transfer(address(lgpsy_token), balance_to_send_to_investor);
+
+		emit Dividend(balance_to_send_to_reit, balance_to_send_to_investor);
+
 		return balance_to_send;
 	}
 
-    /// @notice gets the value of the home
-	function getNAV()public{
-		
+    /// @notice gets the value of the home + cash on hand
+	function backingPerShare()public view returns(uint256){
+		uint256 homeCount = home_nft.count();
+		if(homeCount == 0){
+			return 100;
+		}
+		else{
+			uint256 current_nav = nav();
+			return 	SafeMath.div(current_nav, gypsy_token.totalSupply());
+		}
 	}
 
+    /// @notice gets the value of the home + cash on hand
+	function nav()public view returns(uint256){
+		uint256 cash_on_hand = usdg_token.balanceOf(address(this));
+		return cash_on_hand + totalAssets();
+	}
+
+	/// @notice gets the value of the homes
+	function totalAssets()public view returns(uint256){
+		uint256 homeCount = home_nft.count();
+		uint256 homeSum = 0;
+
+		for(uint256 i = 1; i<=homeCount;i++){
+			homeSum+= home_nft.getAppraisalPrice(i);
+		}
+		return homeSum;
+	}
+
+	/// @notice gets the value of the homes
+	function totalRent()public view returns(uint256){
+		uint256 homeCount = home_nft.count();
+		uint256 rentSum = 0;
+
+		for(uint256 i = 1; i<=homeCount;i++){
+			rentSum+= home_nft.getRent(i);
+		}
+		return rentSum;
+	}
 
     /// @notice asks for money from the treasury for the operation wallet
 	function request(uint256 amount)public{
 		uint256 balance_to_send = usdg_token.balanceOf(address(this));
 		require(balance_to_send>=amount, "Insufficient Balance"); 
 		usdg_token.transfer(operations_wallet, amount);
+
+		emit Request(amount);
 	}
 }

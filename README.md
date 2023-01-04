@@ -22,7 +22,7 @@ This repository contains the smart contracts source code and markets configurati
 Gypsy is a tokenized REIT protocol where users can participate as investors or residents. Investors provide capital to invest in homes to earn a passive income, while residents are able to pay to live in the homes. Everytime a resident pays rent they gain home ownership.
 
 ## Documentation
-See the link to the technical paper or visit the Aave Developer docs
+See the link to the technical paper or visit the Gypsy Developer docs
 - [Technical Paper](https://gypsytoken.org/static/media/Gypsy_Whitepaper.bd977cf1.pdf)
 
 - [Documentation](https://docs.gypsytoken.org/gypsy-protocol/)

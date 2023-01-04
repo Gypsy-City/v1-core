@@ -28,7 +28,7 @@ See the link to the technical paper or visit the Aave Developer docs
 - [Documentation](https://docs.gypsytoken.org/gypsy-protocol/)
 
 ## Audits and Formal Verification
-THESE CONTRACTS ARE INCOMPLETE AND NOT PRODUCTION READY
+THESE CONTRACTS ARE INCOMPLETE AND NOT PRODUCTION READY. THEY ARE NOT AUDITED.
 
 ## Connect with the community
 

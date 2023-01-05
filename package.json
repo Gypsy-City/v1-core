@@ -16,7 +16,7 @@
     "blockcodec-to-ipld-format": "1.0.0",
     "chai": "^4.3.7",
     "dot-prop": "^7.2.0",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.3",
     "eth-gas-reporter": "^0.2.25",
     "ethers": "^5.6.5",
     "husky": "^8.0.1",

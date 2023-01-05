@@ -32,4 +32,4 @@ THESE CONTRACTS ARE INCOMPLETE AND NOT PRODUCTION READY. THEY ARE NOT AUDITED.
 
 ## Connect with the community
 
-You can join the [Discord](https://discord.com/invite/dzqasrgHNT) channel to ask questions about the protocol or talk about Gypsy with other peers.
+You can join the [Discord](https://discord.com/invite/dzqasrgHNT) channel or follow us on [Twitter](https://twitter.com/gypsycityre) to ask questions about the protocol or talk about Gypsy with other peers.

@@ -1,7 +1,25 @@
 {
-  "name": "Gypsy Smart Contracts",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@gypsy/core-v1-alpha",
+  "version": "0.0.1",
+  "description": "Gypsy Protocol V1 core smart contracts",
+  "author": "Gypsy",
+    "contributors": [
+    "Bryan Kyritz <bryan@gypsy.city>"
+  ],
+  "license": "BUSL-1.1",
+  "keywords": [
+    "gypsy",
+    "protocol",
+    "protocol-v1",
+    "core-v1",
+    "ethereum",
+    "solidity"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Gypsy-City/v1-core"
+  },
+
   "dependencies": {
     "@azure/identity": "^2.1.0",
     "@azure/keyvault-secrets": "^4.4.0",

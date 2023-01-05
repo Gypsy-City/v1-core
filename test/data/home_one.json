@@ -1,0 +1,63 @@
+{
+   "name":"3 Pulver Place, New hempstead NY 10977, USA",
+   "description":"This US home NFT provides ownership rights for a legal entity that owns a property. The property subject to the ownership rights is located at 3 Pulver Place, New hempstead NY 10977, USA\n\nthis NFT is minted by Gypsy.",
+   "image":"https://static01.nyt.com/images/2022/06/02/realestate/02OTM-NYC-01/02OTM-NYC-videoSixteenByNine3000.jpg",
+   "attributes":[
+      {
+         "trait_type":"Address",
+         "value":"3 Pulver Place, New hempstead NY 10977, USA"
+      },
+      {
+         "trait_type":"City",
+         "value":"New Hempstead"
+      },
+      {
+         "trait_type":"Country",
+         "value":"USA"
+      },
+      {
+         "trait_type":"Latitutde",
+         "value":-40
+      },
+      {
+         "trait_type":"Longitude",
+         "value":40
+      },
+      {
+         "trait_type":"Beds",
+         "value":4
+      },
+      {
+         "trait_type":"Baths",
+         "value":2.5
+      },
+      {
+         "trait_type":"Square Feet",
+         "value":2500
+      },
+      {
+         "trait_type":"Lot size (Acres)",
+         "value":0.5
+      },
+      {
+         "trait_type":"Type",
+         "value":"Single Family"
+      },
+      {
+         "trait_type":"Year Built",
+         "value":2000
+      },
+      {
+         "trait_type":"Air Condition",
+         "value":"Central"
+      },
+      {
+         "trait_type":"Heating Type",
+         "value":"Hot Water"
+      },
+      {
+         "trait_type":"APN",
+         "value":"3926134214162"
+      }
+   ]
+}

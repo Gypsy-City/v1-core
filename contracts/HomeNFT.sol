@@ -57,11 +57,7 @@ contract HomeNFT is ERC721URIStorage {
         public
         returns (uint256)
     {
-		//mint tokens based on the backing price of GPSY
-		//get backing per GPSY & mint the correct amount
-		//uint256 backing = reit.backingPerShare();
-		//uint256 amntToMint = SafeMath.div(_purchase_price, backing);
-       //gypsy_token.mint(_owner, amntToMint);
+	
 		//Mint the home
         _tokenIds.increment();
 
@@ -131,6 +127,7 @@ contract HomeNFT is ERC721URIStorage {
         return appraisal_price[homeID];
     }
 
+	//gets the REIT that owns the NFT collection
 	function getReit() public view returns(address){
 		return address(reit);
 	}

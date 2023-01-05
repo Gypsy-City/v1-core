@@ -46,14 +46,12 @@ contract USDGToken is ERC20Permit {
 
     function mint(address to, uint256 amount) public virtual returns (bool) {
         //require(msg.sender == admin, "only admin or treasury");
-
         _mint(to, amount);
         emit Mint(msg.sender, to, amount);
         return true;
     }
 
     function burn(uint256 amount) public virtual returns (bool) {
-
         _burn(msg.sender, amount);
         emit Burn(msg.sender, amount);
         return true;

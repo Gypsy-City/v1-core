@@ -88,32 +88,28 @@ contract REIT  {
 		admin = msg.sender;
     }
 
-    /// @notice Chooses to buy or mint GPSY based on price
+    /// @notice mints GPSY based on backing price
 	/// @dev Called by investors
-	function buy(uint256 gpsy_token_amounts) public {
-
+	function buy(uint256 gpsy_token_amount) public {
 		uint256 houseCount = home_nft.count();
 
 		if(houseCount == 0){
 			//price per token is $100
-			//make sure the person is able to pay for the tokens
-			uint256 usdg_amount = gpsy_token_amounts * 100;
-			uint256 allowance = usdg_token.allowance(msg.sender, address(this));
-			require(usdg_amount == allowance, "Please approve tokens before transferring");
+			uint256 usdg_amount = gpsy_token_amount * 100;
 			usdg_token.transferFrom(msg.sender,address(this), usdg_amount);
 			//give them the tokens
-			gypsy_token.mint(msg.sender, gpsy_token_amounts);
+			gypsy_token.mint(msg.sender, gpsy_token_amount);
 		}
 		else{
-			//gets on-chain price
-			//gets backing per GPSY
-
-			//if onChainPrice > backing
-			//Mint new GPSY @ backing
-			//else
-			//buy on-chain
-
-			//start each GPSY at $100
+			//mints new tokens at backing price
+			uint256 backing_price = backingPerShare();
+			//make sure this doesnt overflow
+			//this was designed this way to do division with more precision
+			uint256 usdg_amount_with_extra_decimals = gpsy_token_amount * backing_price;
+			uint256 usdg_amount = SafeMath.div(usdg_amount_with_extra_decimals , 10 ** usdg_token.decimals());
+			usdg_token.transferFrom(msg.sender,address(this), usdg_amount);
+			//give them the tokens
+			gypsy_token.mint(msg.sender, gpsy_token_amount);
 		}
 	}
 
@@ -127,7 +123,7 @@ contract REIT  {
 		uint256 balance_to_send_to_reit = SafeMath.div(balance_to_send,10);
 		uint256 balance_to_send_to_investor = balance_to_send-balance_to_send_to_reit;
 
-		//transfer to REIT
+		//transfer to REIT profit
 		usdg_token.transfer(profits_wallet, balance_to_send_to_reit);
 
 		//transfer to investors (vault)
@@ -142,16 +138,20 @@ contract REIT  {
 	function backingPerShare()public view returns(uint256){
 		uint256 homeCount = home_nft.count();
 		if(homeCount == 0){
-			return 100;
+			return 100 * 10 ** usdg_token.decimals();
 		}
 		else{
 			uint256 current_nav = nav();
-			return 	SafeMath.div(current_nav, gypsy_token.totalSupply());
+			//make sure this doesnt overflow
+			//this was designed this way to do division with more precision
+			uint256 current_nav_with_decimals = SafeMath.mul(current_nav, 10 ** usdg_token.decimals());
+			uint256 backing_per_gpsy = SafeMath.div(current_nav_with_decimals,gypsy_token.totalSupply());
+			return backing_per_gpsy;
 		}
 	}
 
     /// @notice gets the value of the home + cash on hand
-	function nav()public view returns(uint256){
+	function nav() public view returns(uint256){
 		uint256 cash_on_hand = usdg_token.balanceOf(address(this));
 		return cash_on_hand + totalAssets();
 	}
@@ -167,7 +167,7 @@ contract REIT  {
 		return homeSum;
 	}
 
-	/// @notice gets the value of the homes
+	/// @notice gets the rent of the homes
 	function totalRent()public view returns(uint256){
 		uint256 homeCount = home_nft.count();
 		uint256 rentSum = 0;
@@ -175,6 +175,7 @@ contract REIT  {
 		for(uint256 i = 1; i<=homeCount;i++){
 			rentSum+= home_nft.getRent(i);
 		}
+
 		return rentSum;
 	}
 
@@ -185,5 +186,25 @@ contract REIT  {
 		usdg_token.transfer(operations_wallet, amount);
 
 		emit Request(amount);
+	}
+
+	//Property Management
+
+	function addHome(string memory tokenURI, uint256 _rent_price, uint256 _purchase_price)public  returns(bool){
+		//add home NFT
+		home_nft.mint(address(this), tokenURI, _rent_price, _purchase_price);
+
+		request(_purchase_price);
+		return true;
+	}
+
+	function appraiseHome(uint256 homeID, uint256 new_apprasial_price)public  returns(bool){
+		//add home NFT
+		home_nft.setAppraisalPrice(homeID,new_apprasial_price);
+		return true;
+	}
+
+	function numberOfProperties()public view returns(uint256){
+		return home_nft.count();
 	}
 }

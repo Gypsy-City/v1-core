@@ -24,13 +24,10 @@ contract ERC20Permit is IERC20Permit {
 
     string public override name;
     string public override symbol;
-
     uint8 public immutable override decimals;
-
     uint256 public override totalSupply;
 
     mapping(address => uint256) public override balanceOf;
-
     mapping(address => mapping(address => uint256)) public override allowance;
 
     /****************/

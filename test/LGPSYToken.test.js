@@ -425,9 +425,9 @@ contract("LGPSYToken", async (accounts) => {
       });
 
       //updates the vesting period of the profit the owner deposited
-      //the vesting period is set to 5 days
+      //the vesting period is set to 4 weeks
       const VESTING_PERIOD = time.duration.weeks(4);
-      let tx = await lgpsyToken.updateVestingSchedule(VESTING_PERIOD, {
+      await lgpsyToken.updateVestingSchedule(VESTING_PERIOD, {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
@@ -567,8 +567,18 @@ contract("LGPSYToken", async (accounts) => {
 
       //the example was off isuance by half of a second's amount so using percent error instead of exact.
       //this can probably be fixed
-      expect(max_withdraw_after_half_vesting_period).to.be.equal(
+
+      console.log(
+        "max_withdraw_after_half_vesting_period",
+        max_withdraw_after_half_vesting_period.toString()
+      );
+
+      console.log(
+        "expected_withdraw_after_half_vesting_period",
         expected_withdraw_after_half_vesting_period
+      );
+      expect(max_withdraw_after_half_vesting_period).to.be.bignumber.equal(
+        new BN(expected_withdraw_after_half_vesting_period)
       );
     });
   });

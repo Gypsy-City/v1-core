@@ -159,12 +159,4 @@ contract HomeNFT is ERC721URIStorage {
 	function setReit(address _reit_contract) public{
 		reit = REIT(_reit_contract);
 	}
-	
-   	//====================
-	//safe math
-	//====================
-	function multiply(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require(y == 0 || (z = x * y) / y == x);
-    }
-
 }

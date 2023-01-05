@@ -88,6 +88,10 @@ contract REIT  {
 		admin = msg.sender;
     }
 
+	/*////////////////////////////////////////////////////////
+            		    REIT TOKEN 
+    ////////////////////////////////////////////////////////*/
+
     /// @notice mints GPSY based on backing price
 	/// @dev Called by investors
 	function buy(uint256 gpsy_token_amount) public {
@@ -113,6 +117,36 @@ contract REIT  {
 		}
 	}
 
+	/// @notice gets the backing per token in Real estate & Cash reserves 
+	function backingPerShare()public view returns(uint256){
+		uint256 homeCount = home_nft.count();
+		if(homeCount == 0){
+			return 100 * 10 ** usdg_token.decimals();
+		}
+		else{
+			uint256 current_nav = nav();
+			//make sure this doesnt overflow
+			//this was designed this way to do division with more precision
+			uint256 current_nav_with_decimals = SafeMath.mul(current_nav, 10 ** usdg_token.decimals());
+			uint256 backing_per_gpsy = SafeMath.div(current_nav_with_decimals,gypsy_token.totalSupply());
+			return backing_per_gpsy;
+		}
+	}
+
+	/*////////////////////////////////////////////////////////
+            			REIT OPERATIONS
+    ////////////////////////////////////////////////////////*/
+
+	/// @notice asks for money from the treasury for the operation wallet
+	function request(uint256 amount)public{
+		uint256 balance_to_send = usdg_token.balanceOf(address(this));
+		require(balance_to_send>=amount, "Insufficient Balance"); 
+		usdg_token.transfer(operations_wallet, amount);
+
+		emit Request(amount);
+	}
+
+
     /// @notice Distributes profits to staked investors and gypsy
 	/// @dev Called by Gypsy
 	function sendDividend()public returns(uint256){
@@ -134,20 +168,19 @@ contract REIT  {
 		return balance_to_send;
 	}
 
-    /// @notice gets the value of the home + cash on hand
-	function backingPerShare()public view returns(uint256){
-		uint256 homeCount = home_nft.count();
-		if(homeCount == 0){
-			return 100 * 10 ** usdg_token.decimals();
-		}
-		else{
-			uint256 current_nav = nav();
-			//make sure this doesnt overflow
-			//this was designed this way to do division with more precision
-			uint256 current_nav_with_decimals = SafeMath.mul(current_nav, 10 ** usdg_token.decimals());
-			uint256 backing_per_gpsy = SafeMath.div(current_nav_with_decimals,gypsy_token.totalSupply());
-			return backing_per_gpsy;
-		}
+
+	function addHome(string memory tokenURI, uint256 _rent_price, uint256 _purchase_price)public  returns(bool){
+		//add home NFT
+		home_nft.mint(address(this), tokenURI, _rent_price, _purchase_price);
+
+		request(_purchase_price);
+		return true;
+	}
+
+	function appraiseHome(uint256 homeID, uint256 new_apprasial_price)public  returns(bool){
+		//add home NFT
+		home_nft.setAppraisalPrice(homeID,new_apprasial_price);
+		return true;
 	}
 
     /// @notice gets the value of the home + cash on hand
@@ -155,6 +188,10 @@ contract REIT  {
 		uint256 cash_on_hand = usdg_token.balanceOf(address(this));
 		return cash_on_hand + totalAssets();
 	}
+
+	/*////////////////////////////////////////////////////////
+            			REIT FINACIALS
+    ////////////////////////////////////////////////////////*/
 
 	/// @notice gets the value of the homes
 	function totalAssets()public view returns(uint256){
@@ -177,31 +214,6 @@ contract REIT  {
 		}
 
 		return rentSum;
-	}
-
-    /// @notice asks for money from the treasury for the operation wallet
-	function request(uint256 amount)public{
-		uint256 balance_to_send = usdg_token.balanceOf(address(this));
-		require(balance_to_send>=amount, "Insufficient Balance"); 
-		usdg_token.transfer(operations_wallet, amount);
-
-		emit Request(amount);
-	}
-
-	//Property Management
-
-	function addHome(string memory tokenURI, uint256 _rent_price, uint256 _purchase_price)public  returns(bool){
-		//add home NFT
-		home_nft.mint(address(this), tokenURI, _rent_price, _purchase_price);
-
-		request(_purchase_price);
-		return true;
-	}
-
-	function appraiseHome(uint256 homeID, uint256 new_apprasial_price)public  returns(bool){
-		//add home NFT
-		home_nft.setAppraisalPrice(homeID,new_apprasial_price);
-		return true;
 	}
 
 	function numberOfProperties()public view returns(uint256){

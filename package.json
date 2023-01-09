@@ -23,7 +23,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-	"coverage":"hardhat coverage"
+    "coverage": "hardhat coverage"
   },
   "dependencies": {
     "@commitlint/cli": "^17.2.0",
@@ -55,8 +55,8 @@
     "@openzeppelin/test-helpers": "^0.5.16",
     "@openzeppelin/truffle-upgrades": "^1.15.1",
     "coveralls": "^3.1.1",
-    "eth-gas-reporter": "^0.2.25",
     "hardhat": "^2.12.5",
+    "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.8.2",
     "truffle-plugin-verify": "^0.6.1",
     "web3": "^1.8.1"

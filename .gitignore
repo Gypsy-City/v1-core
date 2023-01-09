@@ -3,3 +3,11 @@ build/
 .DS_Store
 .env
 .vscode/
+cache
+artifacts
+coverage
+.coverage_artifacts
+.coverage_cache
+.coverage_contracts
+coverage.json
+deployments/

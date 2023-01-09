@@ -53,6 +53,7 @@ jobs:
       - run:
           name: Coverage
           command: npm run coverage
+      - codecov/upload
 
 workflows:
   version: 2
@@ -65,8 +66,3 @@ workflows:
       - coverage:
           requires:
             - dependencies
-      - upload-to-codecov:
-          requires:
-            - dependencies
-            - coverage
-            - codecov/upload

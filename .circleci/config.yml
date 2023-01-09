@@ -51,7 +51,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Coverage
+          name: Coverage Report
           command: npm run coverage
       - codecov/upload
 

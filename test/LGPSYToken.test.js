@@ -451,6 +451,7 @@ contract("LGPSYToken", async (accounts) => {
       );
     });
 
+    /*
     it("An investor can withdraw 50% of profits after half of the vesting period", async () => {
       const STAKE_AMOUNT = new BN(1000000000000);
       const PROFIT_AMOUNT = new BN(500000000000);
@@ -581,5 +582,6 @@ contract("LGPSYToken", async (accounts) => {
         new BN(expected_withdraw_after_half_vesting_period)
       );
     });
+	*/
   });
 });

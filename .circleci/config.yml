@@ -1,5 +1,8 @@
 version: 2
 
+orbs:
+  codecov: codecov/codecov@3.2.4
+
 aliases:
   - &defaults
     docker:
@@ -48,7 +51,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Coverage Report
+          name: Coverage
           command: npm run coverage
 
 workflows:
@@ -62,3 +65,8 @@ workflows:
       - coverage:
           requires:
             - dependencies
+      - upload-to-codecov:
+          requires:
+            - dependencies
+            - coverage
+            - codecov/upload

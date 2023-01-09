@@ -41,11 +41,24 @@ jobs:
           name: Unit tests
           command: npm test
 
+  coverage:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Coverage Report
+          command: npm run coverage
+
 workflows:
   version: 2
   everything:
     jobs:
       - dependencies
       - test:
+          requires:
+            - dependencies
+      - coverage:
           requires:
             - dependencies

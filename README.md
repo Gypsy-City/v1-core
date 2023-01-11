@@ -1,4 +1,5 @@
 [![Build](https://circleci.com/gh/Gypsy-City/v1-core.svg?style=svg)](https://app.circleci.com/pipelines/github/Gypsy-City/v1-core)
+[![codecov](https://codecov.io/gh/Gypsy-City/v1-core/branch/main/graph/badge.svg?token=5D5TRH8RQX)](https://codecov.io/gh/Gypsy-City/v1-core)
 
 ```
 

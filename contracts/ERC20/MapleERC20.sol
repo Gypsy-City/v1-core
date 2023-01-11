@@ -1,7 +1,7 @@
+
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
-
-import "./IERC20Permit.sol";
+import { IERC20 } from "../interfaces/IERC20.sol";
 
 /*
     ███████╗██████╗  ██████╗    ██████╗  ██████╗
@@ -16,7 +16,7 @@ import "./IERC20Permit.sol";
  *  @title Modern ERC-20 implementation.
  *  @dev   Acknowledgements to Solmate, OpenZeppelin, and DSS for inspiring this code.
  */
-contract ERC20Permit is IERC20Permit {
+contract MapleERC20 is IERC20 {
 
     /**************/
     /*** ERC-20 ***/
@@ -24,10 +24,13 @@ contract ERC20Permit is IERC20Permit {
 
     string public override name;
     string public override symbol;
+
     uint8 public immutable override decimals;
+
     uint256 public override totalSupply;
 
     mapping(address => uint256) public override balanceOf;
+
     mapping(address => mapping(address => uint256)) public override allowance;
 
     /****************/
@@ -98,7 +101,7 @@ contract ERC20Permit is IERC20Permit {
         _approve(owner_, spender_, amount_);
     }
 
-    function transfer(address recipient_, uint256 amount_) external override virtual returns (bool success_) {
+    function transfer(address recipient_, uint256 amount_) external override returns (bool success_) {
         _transfer(msg.sender, recipient_, amount_);
         return true;
     }

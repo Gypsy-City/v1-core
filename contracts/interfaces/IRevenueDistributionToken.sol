@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.0;
 
-import "../erc20/permit/IERC20Permit.sol";
-import "./IERC4626.sol";
+import { IERC20 } from "./IERC20.sol";
+
+import { IERC4626 } from "./IERC4626.sol";
+
 
 /// @title A token that represents ownership of future revenues distributed linearly over time.
-interface IRevenueDistributionToken is IERC20Permit, IERC4626 {
+interface IRevenueDistributionToken is IERC20, IERC4626 {
 
     /**************/
     /*** Events ***/

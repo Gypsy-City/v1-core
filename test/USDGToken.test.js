@@ -6,7 +6,7 @@ const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const USDGToken = artifacts.require("USDGToken");
 
 contract("USDGToken", async (accounts) => {
-  const tokenName = "USDGContract";
+  const tokenName = "USDG";
   const tokenSymbol = "USDG";
   const tokenDecimals = 6;
   let token;
@@ -226,7 +226,6 @@ contract("USDGToken", async (accounts) => {
     });
   });
 
-  /*
   describe("events", async () => {
     it("events: should fire Transfer event properly", async () => {
       const res = await token.transfer(accounts[1], "2666", {
@@ -267,5 +266,4 @@ contract("USDGToken", async (accounts) => {
       assert.strictEqual(approvalLog.args._value.toString(), "2666");
     });
   });
-  */
 });

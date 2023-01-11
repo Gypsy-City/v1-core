@@ -1,29 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./erc20/permit/ERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 
-contract TestGPSY is ERC20Permit {
-  
-    address public admin;
+contract TestGPSY is ERC20, ERC20Burnable, Ownable, ERC20Permit {
+    constructor() ERC20("Gypsy Token", "GPSY") ERC20Permit("Gypsy Token") {}
 
-    event Mint(address _from, address indexed _to, uint256 _value);
-    event Burn(address indexed _from, uint256 _value);
-
-    constructor() ERC20Permit("GPSYContract", "GPSY", 6) {
-        admin = msg.sender;
-    }
-
-    function mint(address to, uint256 amount) public virtual returns (bool) {
+    function mint(address to, uint256 amount) public {
         _mint(to, amount);
-        emit Mint(msg.sender, to, amount);
-        return true;
     }
-
-    function burn(uint256 amount) public virtual returns (bool) {
-        _burn(msg.sender, amount);
-        emit Burn(msg.sender, amount);
-        return true;
-    }
-
 }

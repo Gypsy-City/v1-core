@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.0;
 
-import "../erc20/permit/IERC20Permit.sol";
+import { IERC20 } from "./IERC20.sol";
 
 /// @title A standard for tokenized Vaults with a single underlying ERC-20 token.
-interface IERC4626 is IERC20Permit {
+interface IERC4626 is IERC20 {
 
     /**************/
     /*** Events ***/

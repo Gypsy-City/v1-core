@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
 
-import "../erc20/IERC20Like.sol";
+import "../interfaces/IERC20Like.sol";
 
 /**
  * @title Small Library to standardize erc20 token interactions.

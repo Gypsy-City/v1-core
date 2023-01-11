@@ -10,6 +10,6 @@ module.exports = {
     accounts,
   },
   onCompileComplete: function () {
-    console.log("onCompileComplete hook");
+    console.log("Done Generating Coverage!");
   },
 };

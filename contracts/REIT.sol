@@ -11,7 +11,7 @@ import "./LGPSYToken.sol";
  @title  REIT contract
  @author Gypsy.City
  @notice This contract is used by Gypsy to remain compliant with REIT laws.
- @notice SEC File: https://www.sec.gov/files/reits.pdf
+ @notice SEC File on REITs: https://www.sec.gov/files/reits.pdf
 
 To qualify as a REIT, a company must have the bulk of its assets and income connected to real estate
 investment and must distribute at least 90 percent of its taxable income to shareholders annually in the form of dividends.

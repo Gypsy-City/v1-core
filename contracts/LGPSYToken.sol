@@ -1,12 +1,20 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.0;
+import { MapleERC20 } from "./ERC20/MapleERC20.sol";
+import { ERC20Helper } from "./utils/ERC20Helper.sol";
 
-import "./erc20/permit/ERC20Permit.sol";
-import "./utils/ERC20Helper.sol";
-import "./erc4626/IRevenueDistributionToken.sol";
-import "./utils/SafeTransferLib.sol";
+import { IRevenueDistributionToken } from "./interfaces/IRevenueDistributionToken.sol";
 
-contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
+/*
+    ██████╗ ██████╗ ████████╗
+    ██╔══██╗██╔══██╗╚══██╔══╝
+    ██████╔╝██║  ██║   ██║
+    ██╔══██╗██║  ██║   ██║
+    ██║  ██║██████╔╝   ██║
+    ╚═╝  ╚═╝╚═════╝    ╚═╝
+*/
+
+contract LGPSYToken is IRevenueDistributionToken, MapleERC20 {
 
     uint256 public immutable override precision;  // Precision of rates, equals max deposit amounts before rounding errors occur
 
@@ -37,11 +45,11 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
     }
 
     constructor(string memory name_, string memory symbol_, address owner_, address asset_, uint256 precision_)
-        ERC20Permit("Stakes GPSY", "LGPSY", ERC20Permit(asset_).decimals())
+        MapleERC20(name_, symbol_, MapleERC20(asset_).decimals())
     {
         require((owner = owner_) != address(0), "RDT:C:OWNER_ZERO_ADDRESS");
 
-        asset     = asset_;  // Don't need to check zero address as ERC20(asset_).decimals() will fail in ERC20 constructor.
+        asset     = asset_;  // Don't need to check zero address as MapleERC20(asset_).decimals() will fail in ERC20 constructor.
         precision = precision_;
     }
 
@@ -74,7 +82,7 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
         freeAssets_ = freeAssets = totalAssets();
 
         // Calculate slope.
-        issuanceRate_ = issuanceRate = ((ERC20Permit(asset).balanceOf(address(this)) - freeAssets_) * precision) / vestingPeriod_;
+        issuanceRate_ = issuanceRate = ((MapleERC20(asset).balanceOf(address(this)) - freeAssets_) * precision) / vestingPeriod_;
 
         // Update timestamp and period finish.
         vestingPeriodFinish = (lastUpdated = block.timestamp) + vestingPeriod_;
@@ -101,7 +109,7 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
     )
         external virtual override nonReentrant returns (uint256 shares_)
     {
-        ERC20Permit(asset).permit(msg.sender, address(this), assets_, deadline_, v_, r_, s_);
+        MapleERC20(asset).permit(msg.sender, address(this), assets_, deadline_, v_, r_, s_);
         _mint(shares_ = previewDeposit(assets_), assets_, receiver_, msg.sender);
     }
 
@@ -122,7 +130,7 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
     {
         require((assets_ = previewMint(shares_)) <= maxAssets_, "RDT:MWP:INSUFFICIENT_PERMIT");
 
-        ERC20Permit(asset).permit(msg.sender, address(this), maxAssets_, deadline_, v_, r_, s_);
+        MapleERC20(asset).permit(msg.sender, address(this), maxAssets_, deadline_, v_, r_, s_);
         _mint(shares_, assets_, receiver_, msg.sender);
     }
 
@@ -152,8 +160,7 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
         emit Deposit(caller_, receiver_, assets_, shares_);
         emit IssuanceParamsUpdated(freeAssetsCache, issuanceRate_);
 
-
-       require(ERC20Helper.transferFrom(asset, caller_, address(this), assets_), "RDT:M:TRANSFER_FROM");
+        require(ERC20Helper.transferFrom(asset, caller_, address(this), assets_), "RDT:M:TRANSFER_FROM");
     }
 
     function _burn(uint256 shares_, uint256 assets_, address receiver_, address owner_, address caller_) internal {
@@ -261,7 +268,6 @@ contract LGPSYToken is IRevenueDistributionToken, ERC20Permit {
                 block.timestamp - lastUpdated_;
 
         return ((issuanceRate_ * vestingTimePassed) / precision) + freeAssets;
-		
     }
 
     /**************************/

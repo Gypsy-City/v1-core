@@ -1,7 +1,10 @@
 const { expect } = require("chai");
 const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 //Helpers
-const { convertToBNDecimals } = require("./helpers/calculations");
+const {
+  convertToBNDecimals,
+  calculateBNPercentage,
+} = require("./helpers/calculations");
 //Contracts
 const HomeNFT = artifacts.require("HomeNFT");
 const TestGPSY = artifacts.require("TestGPSY");
@@ -12,6 +15,8 @@ const LGPSYToken = artifacts.require("LGPSYToken");
 contract("REIT", async (accounts) => {
   const HOME_PURCHASE_PRICE = 1000000;
   const RENT_PRICE = 6000;
+  const RENT_CYCLE = 2592000;
+  const RENT_CYCLES_DAYS = RENT_CYCLE / (24 * 60 * 60);
   const HOME_DATA_URI =
     "https://bafybeievyhunzymva6pjfgnjuwsobhxxp3pb6fonxryn5wuvh65h7lthxe.ipfs.w3s.link/data.json";
 
@@ -82,36 +87,54 @@ contract("REIT", async (accounts) => {
 
   describe("Cashflow", async () => {
     it("The contract recieves the rent payment", async () => {
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENT_PRICE = convertToBNDecimals(
+        RENT_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENTER_SHARE = calculateBNPercentage(BN_RENT_PRICE, 15);
+      const BN_INVESTOR_SHARE = calculateBNPercentage(BN_RENT_PRICE, 85);
+
       //gives the reit the money to buy the home
-      await usdgToken.mint(reit.address, new BN(HOME_PURCHASE_PRICE), {
+      await usdgToken.mint(reit.address, new BN(BN_HOME_PURCHASE_PRICE), {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
       //adds home
-      await reit.addHome(HOME_DATA_URI, RENT_PRICE, HOME_PURCHASE_PRICE, {
+      await reit.addHome(HOME_DATA_URI, BN_RENT_PRICE, BN_HOME_PURCHASE_PRICE, {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      let before_balance = await usdgToken.balanceOf(reit.address);
-      expect(before_balance).to.be.bignumber.equal(new BN(0));
-
       //gives the renter the rent money
-      await usdgToken.mint(renter, new BN(RENT_PRICE), {
+      await usdgToken.mint(renter, BN_RENT_PRICE, {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
       //approve the rent payment
-      await usdgToken.approve(homeNft.address, new BN(RENT_PRICE), {
+      await usdgToken.approve(homeNft.address, new BN(BN_RENT_PRICE), {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
       });
+
+      await usdgToken.approve(reit.address, new BN(BN_RENTER_SHARE), {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      console.log("pay rent time");
 
       //rent the house
       await homeNft.payRent(1, {

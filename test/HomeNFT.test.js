@@ -5,6 +5,10 @@ const {
   expectRevert,
   time,
 } = require("@openzeppelin/test-helpers");
+const {
+  convertToBNDecimals,
+  calculateBNPercentage,
+} = require("./helpers/calculations");
 const { getCurrentTimestamp } = require("./helpers/time");
 const { upkeepSimulateDays } = require("./helpers/chainlinkUpkeep");
 //Contracts
@@ -398,6 +402,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -438,6 +448,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -484,6 +500,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -513,6 +535,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -562,6 +590,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -592,28 +626,47 @@ contract("HomeNFT", async (accounts) => {
 
   describe("Renter can send payment", async () => {
     it("renter is able to pay rent", async () => {
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENT_PRICE = convertToBNDecimals(
+        RENT_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENTER_SHARE = calculateBNPercentage(BN_RENT_PRICE, 15);
+      const BN_INVESTOR_SHARE = calculateBNPercentage(BN_RENT_PRICE, 85);
+
       await homeNft.mint(
         currentOwner,
         HOME_DATA_URI,
-        RENT_PRICE,
-        HOME_PURCHASE_PRICE,
+        BN_RENT_PRICE,
+        BN_HOME_PURCHASE_PRICE,
         { from: currentOwner, gas: 5000000, gasPrice: 500000000 }
       );
 
       //gives the renter the rent money
-      await usdgToken.mint(renter, RENT_PRICE, {
+      await usdgToken.mint(renter, BN_RENT_PRICE, {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      await usdgToken.approve(homeNft.address, RENT_PRICE, {
+      await usdgToken.approve(homeNft.address, BN_RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      const allowance_amount = await usdgToken.allowance(
+      await usdgToken.approve(reit.address, BN_RENTER_SHARE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      const allowance_amount_nft = await usdgToken.allowance(
         renter,
         homeNft.address,
         {
@@ -623,23 +676,117 @@ contract("HomeNFT", async (accounts) => {
         }
       );
 
-      expect(new BN(RENT_PRICE)).to.be.bignumber.equal(allowance_amount);
+      const allowance_amount_reit = await usdgToken.allowance(
+        renter,
+        reit.address,
+        {
+          from: renter,
+          gas: 5000000,
+          gasPrice: 500000000,
+        }
+      );
 
+      expect(BN_RENT_PRICE).to.be.bignumber.equal(allowance_amount_nft);
+      expect(BN_RENTER_SHARE).to.be.bignumber.equal(allowance_amount_reit);
       //rent the house
-      const tx = await homeNft.payRent(1, {
+      await homeNft.payRent(1, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
+      //15% of the rent should have gone to buying GPSY
+      //85% of the rent should have gone to the owner of the home NFT
+
       //check that the funds were actually sent
       const balance_of_renter = await usdgToken.balanceOf(renter);
-
       //owner of the house recieved the rent payment
       expect(balance_of_renter).to.be.bignumber.equal(new BN(0));
     });
 
-    it("renter can extend stay by paying more rent", async () => {
+    it("renter recieves ownership with rent payment", async () => {
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENT_PRICE = convertToBNDecimals(
+        RENT_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENTER_SHARE = calculateBNPercentage(BN_RENT_PRICE, 15);
+      const BN_INVESTOR_SHARE = calculateBNPercentage(BN_RENT_PRICE, 85);
+
+      await homeNft.mint(
+        currentOwner,
+        HOME_DATA_URI,
+        BN_RENT_PRICE,
+        BN_HOME_PURCHASE_PRICE,
+        { from: currentOwner, gas: 5000000, gasPrice: 500000000 }
+      );
+
+      //gives the renter the rent money
+      await usdgToken.mint(renter, BN_RENT_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(homeNft.address, BN_RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, BN_RENTER_SHARE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      const allowance_amount_nft = await usdgToken.allowance(
+        renter,
+        homeNft.address,
+        {
+          from: renter,
+          gas: 5000000,
+          gasPrice: 500000000,
+        }
+      );
+
+      const allowance_amount_reit = await usdgToken.allowance(
+        renter,
+        reit.address,
+        {
+          from: renter,
+          gas: 5000000,
+          gasPrice: 500000000,
+        }
+      );
+
+      expect(allowance_amount_nft).to.be.bignumber.equal(BN_RENT_PRICE);
+      expect(allowance_amount_reit).to.be.bignumber.equal(BN_RENTER_SHARE);
+      //rent the house
+      await homeNft.payRent(1, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      //15% of the rent should have gone to buying GPSY
+      //85% of the rent should have gone to the owner of the home NFT
+
+      //check that the funds were actually sent
+      const gypsy_balance_of_renter = await gpsyToken.balanceOf(renter);
+      const expected_gypsy_balance_of_renter = BN_RENTER_SHARE.div(new BN(100)); //100 because thats the default price of Gypsy
+      //owner of the house recieved the rent payment
+      expect(gypsy_balance_of_renter).to.be.bignumber.equal(
+        expected_gypsy_balance_of_renter
+      );
+    });
+
+    it("renter can extend the stay by paying more rent", async () => {
       await homeNft.mint(
         currentOwner,
         HOME_DATA_URI,
@@ -656,6 +803,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -682,6 +835,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -735,6 +894,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -774,6 +939,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -808,6 +979,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -886,6 +1063,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -921,6 +1104,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -936,38 +1125,42 @@ contract("HomeNFT", async (accounts) => {
     });
 
     it("home NFT owner recieves rent payment", async () => {
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      const BN_RENT_PRICE = convertToBNDecimals(
+        RENT_PRICE,
+        await usdgToken.decimals()
+      );
+
       await homeNft.mint(
         currentOwner,
         HOME_DATA_URI,
-        RENT_PRICE,
-        HOME_PURCHASE_PRICE,
+        BN_RENT_PRICE,
+        BN_HOME_PURCHASE_PRICE,
         { from: currentOwner, gas: 5000000, gasPrice: 500000000 }
       );
 
       //gives the renter the rent money
-      await usdgToken.mint(renter, RENT_PRICE, {
+      await usdgToken.mint(renter, BN_RENT_PRICE, {
         from: currentOwner,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      await usdgToken.approve(homeNft.address, RENT_PRICE, {
+      await usdgToken.approve(homeNft.address, BN_RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      const allowance_amount = await usdgToken.allowance(
-        renter,
-        homeNft.address,
-        {
-          from: renter,
-          gas: 5000000,
-          gasPrice: 500000000,
-        }
-      );
-
-      expect(new BN(RENT_PRICE)).to.be.bignumber.equal(allowance_amount);
+      await usdgToken.approve(reit.address, BN_RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
 
       //rent the house
       const tx = await homeNft.payRent(1, {
@@ -979,8 +1172,10 @@ contract("HomeNFT", async (accounts) => {
       //check that the funds were actually sent (Sends to the REIT contract)
       const balance_of_owner = await usdgToken.balanceOf(currentOwner);
 
+      let INVESTOR_SHARE_OF_RENT = calculateBNPercentage(BN_RENT_PRICE, 85);
+
       //owner of the house recieved the rent payment
-      expect(balance_of_owner).to.be.bignumber.equal(new BN(RENT_PRICE));
+      expect(balance_of_owner).to.be.bignumber.equal(INVESTOR_SHARE_OF_RENT);
     });
   });
 
@@ -1002,6 +1197,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -1050,6 +1251,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -1115,6 +1322,12 @@ contract("HomeNFT", async (accounts) => {
         gasPrice: 500000000,
       });
 
+      await usdgToken.approve(reit.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await usdgToken.allowance(renter, homeNft.address, {
         from: renter,
         gas: 5000000,
@@ -1153,6 +1366,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,
@@ -1260,6 +1479,12 @@ contract("HomeNFT", async (accounts) => {
       });
 
       await usdgToken.approve(homeNft.address, RENT_PRICE, {
+        from: renter,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, RENT_PRICE, {
         from: renter,
         gas: 5000000,
         gasPrice: 500000000,

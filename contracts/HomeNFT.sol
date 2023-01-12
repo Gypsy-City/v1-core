@@ -7,9 +7,13 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "./TestGPSY.sol";
 import "./USDGToken.sol";
 import "./REIT.sol";
+
+import "hardhat/console.sol";
 
 /** 
  @title  Gypsy Portfolio NFT collection
@@ -20,7 +24,9 @@ import "./REIT.sol";
 */
 
 contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
+    using EnumerableMap for EnumerableMap.UintToAddressMap;
 	using Counters for Counters.Counter;
+	
  	Counters.Counter private _tokenIds; //counter of how many homes were minted from the contract
     address public admin; //the address that is able to add homes to the portfolio
     TestGPSY private gypsy_token; // the Gypsy Token Contract
@@ -38,9 +44,9 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 	mapping(uint256 => uint256) price; //the price of each home (estimated by Parcl Price feeds)
 	mapping(uint256 => uint256) appraisal_price; //the price determined by appraisals
 	mapping(uint256 => uint256) purchase_price; //the price of the home by Gypsy
-	mapping(uint256 => mapping(string => uint256)) recurring_maintance_costs; //the recurring monthly costs for a property (mortgage payment, insurance, taxes, HOA dues)
-	//---->home------->mortgage------>$
-	//           |---->insurance----->$
+	mapping(uint256 => EnumerableMap.Bytes32ToUintMap) recurring_maintance_costs; //the recurring monthly costs for a property (mortgage payment, insurance, taxes, HOA dues)
+	//---->home------->mortgage(0)------>$
+	//           |---->insurance(1)----->$
 	
     /*////////////////////////////////////////////////////////
                       		Events
@@ -62,35 +68,6 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
     function count() public view returns (uint256) {
         uint256 newHomeId = _tokenIds.current();
         return newHomeId;
-    }
-
-    /*////////////////////////////////////////////////////////
-            	 ERC721 Open Zeppelin overrides
-    ////////////////////////////////////////////////////////*/
-
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
     }
 
     /*////////////////////////////////////////////////////////
@@ -132,18 +109,42 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 	//Pays rent to the owner of the home NFT in USDG
 	function payRent(uint256 homeID)
         public
-        returns(bool)
+        returns(uint256)
     {
 		//allows anyone to rent an unoccupied house but if a house is occupied only that current renter can pay
 		require(isOccupied[homeID] == false || renter[homeID] == msg.sender, "The property is currently occupied");
 		//get rent amount
 		uint256 _rent_amount = rent_price[homeID];
-		address owner_of = ownerOf(homeID);
+		address owner_of = ownerOf(homeID);	
+		//DIVIDE FUNDS
+		//15% goes to purchasing ownership for the renter
+		//Calculate 15%
+        uint256 balance_to_rent_to_own = SafeMath.mul(_rent_amount, 15);
+		balance_to_rent_to_own = SafeMath.div(balance_to_rent_to_own,100);
+		uint256 balance_to_rent_to_own_decimals = SafeMath.mul(balance_to_rent_to_own, 10**18);
+
+        uint256 balance_to_send_to_owner = SafeMath.sub(_rent_amount, balance_to_rent_to_own);
+		
+		//calculate how much GPSY to buy
+		uint256 current_backing_per_token = reit.backingPerShare();
+		uint256 gypsy_token_amount = SafeMath.div(balance_to_rent_to_own_decimals, current_backing_per_token);
+
 		//make sure the person is able to pay for the rent
-		uint256 allowance = usdg_token.allowance(msg.sender, address(this));
-		require(_rent_amount == allowance, "Please approve tokens before transferring");
-		//Transfer funds
-		usdg_token.transferFrom(msg.sender,owner_of, _rent_amount);
+		uint256 allowance_this_contract = usdg_token.allowance(msg.sender, address(this));
+		uint256 allowance_reit_contract = usdg_token.allowance(msg.sender, address(reit));
+		require(_rent_amount <= allowance_this_contract, "Please approve tokens before transferring");
+		require(balance_to_rent_to_own <= allowance_reit_contract, "Please approve tokens before transferring");
+
+		//the rest goes to the owner of the REIT
+		//pay the owner of the REIT
+		usdg_token.transferFrom(msg.sender,owner_of, balance_to_send_to_owner);
+		//sent the money to the HomeNFT so that it can buy the GPSY for you
+		usdg_token.transferFrom(msg.sender,address(this), balance_to_rent_to_own);
+		//buy the GPSY
+		usdg_token.approve(address(reit), balance_to_rent_to_own);
+
+		reit.buyTo(gypsy_token_amount, msg.sender);
+
 		//Updates the property settings
 		bool hasRenter = isOccupied[homeID];
 		if(hasRenter){
@@ -166,7 +167,7 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 
 		emit PayedRent(msg.sender, owner_of, homeID, _rent_amount);
 
-		return true;
+		return gypsy_token_amount;
     }
 
 
@@ -357,6 +358,43 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 		RENT_CYCLE = new_rent_cycle;
 	}
 
+	//Sets a new rent price for a home
+	function addRecurringPayment(uint256 homeId, uint16 bill_code, uint256 monthly_cost)
+        public 
+    {
+		EnumerableMap.Bytes32ToUintMap storage bills = recurring_maintance_costs[homeId];
+		//bool a = bills.set(bills, bill_code,monthly_cost);
+    }
+
+
+   /*////////////////////////////////////////////////////////
+            	 ERC721 Open Zeppelin overrides
+    ////////////////////////////////////////////////////////*/
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
 
 	
 }

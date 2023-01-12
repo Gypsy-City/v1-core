@@ -8,6 +8,13 @@ function convertToBNDecimals(number, decimals) {
   return bn_a.mul(bn_b);
 }
 
+function calculateBNPercentage(bigNumber, percent) {
+  const bn = new BN(bigNumber);
+  const percentage = bn.mul(new BN(percent)).div(new BN(100));
+  return percentage;
+}
+
 module.exports = {
   convertToBNDecimals,
+  calculateBNPercentage,
 };

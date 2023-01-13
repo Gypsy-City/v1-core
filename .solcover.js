@@ -2,7 +2,7 @@ const accounts = require(`./test-wallets.js`).accounts;
 
 module.exports = {
   configureYulOptimizer: true,
-  skipFiles: ["./mocks", "./interfaces", "./dependencies"],
+  skipFiles: ["./ERC20", "./interfaces", "./utils"],
   mocha: {
     enableTimeouts: false,
   },

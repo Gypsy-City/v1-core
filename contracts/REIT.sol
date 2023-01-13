@@ -150,6 +150,7 @@ contract REIT is IERC721Receiver {
     /// @notice gets the backing per token in Real estate & Cash reserves
     function backingPerShare() public view returns (uint256) {
         uint256 homeCount = home_nft.count();
+
 		//if there are no homes or gypsy in circulation
         if (homeCount == 0 || gypsy_token.totalSupply() == 0) {
             return 100 * 10 ** usdg_token.decimals();

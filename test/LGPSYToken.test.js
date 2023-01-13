@@ -1,6 +1,4 @@
 const { expect } = require("chai");
-const log = require("./helpers/logger");
-const { calculateETH } = require("./helpers/gasAverage");
 const {
   BN,
   expectEvent,
@@ -67,7 +65,7 @@ contract("LGPSYToken", async (accounts) => {
     await homeNft.setReit(reit.address);
 
     await homeNft.mint(
-      lgpsyToken.address,
+      reit.address,
       HOME_DATA_URI,
       RENT_PRICE,
       HOME_PURCHASE_PRICE,
@@ -132,13 +130,6 @@ contract("LGPSYToken", async (accounts) => {
         gas: 5000000,
         gasPrice: 500000000,
       });
-
-      log(
-        `[${calculateETH(
-          gasAverage,
-          tx.receipt.gasUsed
-        )} ETH] --> fees of staking GPSY`
-      );
     });
 
     it("GPSY staker recieves the correct shares of LGPSY", async () => {
@@ -243,13 +234,6 @@ contract("LGPSYToken", async (accounts) => {
         gas: 5000000,
         gasPrice: 500000000,
       });
-
-      log(
-        `[${calculateETH(
-          gasAverage,
-          tx.receipt.gasUsed
-        )} ETH] --> fees of withdraw GPSY from LGPSY`
-      );
 
       investor_balance_lgpsy = await lgpsyToken.balanceOf(investor);
       investor_balance_of_assets = await lgpsyToken.balanceOfAssets(investor);

@@ -29,9 +29,9 @@ module.exports = {
   gasReporter: {
     enabled: true,
     currency: "USD",
-    token: "ETH", //Can be "ETH" or "MATIC"
+    token: "MATIC", //Can be "ETH" or "MATIC"
     gasPriceApi:
-      "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice", //Can be "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice" or "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice"
+      "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice", //Can be "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice" or "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice"
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
   },
 };

@@ -23,7 +23,9 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage",
+    "deploy_testnet": "hardhat --network goerli deploy",
+    "deploy_mainnet": "hardhat run scripts/deploy.js --network polygon"
   },
   "dependencies": {
     "@commitlint/cli": "^17.2.0",
@@ -38,7 +40,6 @@
     "chai": "^4.3.7",
     "dot-prop": "^7.2.0",
     "dotenv": "^16.0.3",
-    "ethers": "^5.6.5",
     "prettier-plugin-solidity": "^1.0.0-beta.24",
     "truffle-assertions": "^0.9.2",
     "truffle-hdwallet-provider": "^1.0.17",
@@ -51,7 +52,7 @@
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.5",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.2.1",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-etherscan": "^3.1.4",
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@nomiclabs/hardhat-web3": "^2.0.0",
@@ -62,7 +63,10 @@
     "@types/mocha": "^9.1.1",
     "chai-bn": "^0.3.1",
     "coveralls": "^3.1.1",
+    "ethers": "^5.7.2",
     "hardhat": "^2.12.5",
+    "hardhat-deploy": "^0.11.22",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.8.2",
     "truffle-plugin-verify": "^0.6.1",

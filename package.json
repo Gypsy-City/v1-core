@@ -25,7 +25,8 @@
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "deploy_testnet": "hardhat --network goerli deploy",
-    "deploy_mainnet": "hardhat run scripts/deploy.js --network polygon"
+    "deploy_mainnet": "hardhat --network mainnet deploy",
+    "script": "hardhat run scripts/give_wallet_usdg.js"
   },
   "dependencies": {
     "@commitlint/cli": "^17.2.0",
@@ -53,7 +54,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
-    "@nomiclabs/hardhat-etherscan": "^3.1.4",
+    "@nomiclabs/hardhat-etherscan": "^3.1.5",
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/test-helpers": "^0.5.16",

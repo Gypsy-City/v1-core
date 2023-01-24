@@ -60,7 +60,7 @@ contract("HomeNFT", async (accounts) => {
       "LGPSY",
       currentOwner,
       gpsyToken.address,
-      2
+      18
     );
 
     reit = await REIT.new(

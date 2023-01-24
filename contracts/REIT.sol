@@ -118,8 +118,8 @@ contract REIT is IERC721Receiver {
 			10 ** usdg_token.decimals()
 		);
 
-		uint256 allowance = usdg_token.allowance(msg.sender, address(this));
-		require(usdg_amount <= allowance, "Please approve tokens before transferring");
+		//uint256 allowance = usdg_token.allowance(msg.sender, address(this));
+		//require(usdg_amount <= allowance, "Please approve tokens before transferring");
 
 		usdg_token.transferFrom(msg.sender, address(this), usdg_amount);
 		//give them the tokens
@@ -138,11 +138,11 @@ contract REIT is IERC721Receiver {
 			10 ** usdg_token.decimals()
 		);
 
-		uint256 allowance = usdg_token.allowance(msg.sender, address(this));
-		require(usdg_amount <= allowance, "Please approve tokens before transferring");
+		//uint256 allowance = usdg_token.allowance(to, address(this));
+		//require(usdg_amount <= allowance, "Please approve Reit spending tokens before transferring");
 
 		//take the USDG
-		usdg_token.transferFrom(msg.sender, address(this), usdg_amount);
+		usdg_token.transferFrom(to, address(this), usdg_amount);
 		//give them the tokens
 		gypsy_token.mint(to, gpsy_token_amount);        
     }
@@ -177,7 +177,7 @@ contract REIT is IERC721Receiver {
     /// @notice asks for money from the treasury for the operation wallet
     function request(uint256 amount) public {
         uint256 balance_to_send = usdg_token.balanceOf(address(this));
-        require(balance_to_send >= amount, "Insufficient Balance");
+        require(balance_to_send >= amount, "Insufficient balance for request");
         usdg_token.transfer(operations_wallet, amount);
 
         emit Request(amount);
@@ -200,6 +200,48 @@ contract REIT is IERC721Receiver {
         //transfer to investors (vault)
         usdg_token.transfer(address(lgpsy_token), balance_to_send_to_investor);
 
+        emit Dividend(balance_to_send_to_reit, balance_to_send_to_investor);
+
+        return balance_to_send;
+    }
+
+	/// @notice Distributes profits to staked investors and gypsy
+    /// @dev Called by Gypsy
+    function sendDividendGypsy(uint256 balance_to_send) public returns (uint256) {
+        //Sends 10% of the profits to the REIT
+        //Sends 90% of the profits to the investors
+
+        uint256 balance_to_send_to_reit = SafeMath.div(balance_to_send, 10);
+        uint256 balance_to_send_to_investor = balance_to_send -
+            balance_to_send_to_reit;
+
+        //transfer to REIT profit
+        usdg_token.transfer(profits_wallet, balance_to_send_to_reit);
+
+        //transfer to investors (vault)
+        //usdg_token.transfer(address(lgpsy_token), balance_to_send_to_investor);
+
+		uint256 backing = backingPerShare();
+
+		  uint256 current_gpsy_amount_with_decimals = SafeMath.div(
+                balance_to_send_to_investor,
+                backing
+            );
+
+		
+
+       uint256 current_gpsy_amount = SafeMath.mul(
+                current_gpsy_amount_with_decimals,
+                10 ** gypsy_token.decimals()
+            );
+		
+		//mint new gypsy that is equal to the USDG meant to send out
+		gypsy_token.mint(address(this), current_gpsy_amount);    
+		//send to vault as payment
+		gypsy_token.transfer(address(lgpsy_token), current_gpsy_amount);
+
+
+		
         emit Dividend(balance_to_send_to_reit, balance_to_send_to_investor);
 
         return balance_to_send;

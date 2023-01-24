@@ -51,7 +51,7 @@ contract("REIT", async (accounts) => {
       "LGPSY",
       currentOwner,
       gpsyToken.address,
-      2
+      18
     );
 
     reit = await REIT.new(
@@ -3082,6 +3082,132 @@ contract("REIT", async (accounts) => {
       //check total monthly rent
       let current_total_rent = await reit.totalRent();
       expect(current_total_rent).to.be.bignumber.equal(new BN(RENT_PRICE * 3));
+    });
+  });
+  describe("Dividends", async () => {
+    it("Successfully converts USDG in the treasury to GPSY and sends it to the vault", async () => {
+      //give the reit the money for the home
+
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      await usdgToken.mint(reit.address, BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await reit.sendDividendGypsy(BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      //check if the profit wallet got the GYPSY
+
+      //check if the vault got the GPSY
+      let balance_vault = await gpsyToken.balanceOf(lgpsyToken.address);
+
+      let backing = await reit.backingPerShare({
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      let amnt_usdg_converted = BN_HOME_PURCHASE_PRICE.mul(new BN(9)).div(
+        new BN(10)
+      );
+      let expected_balance_gypsy = amnt_usdg_converted.div(backing);
+      let dec = new BN(10);
+      let pow = new BN(18);
+      dec = dec.pow(pow);
+      let bn_expected_balance_gypsy = expected_balance_gypsy.mul(dec);
+
+      expect(balance_vault).to.be.bignumber.equal(bn_expected_balance_gypsy);
+
+      let balance_reit_usdg = await usdgToken.balanceOf(reit.address);
+      expect(balance_reit_usdg).to.be.bignumber.equal(amnt_usdg_converted);
+    });
+
+    it("Staked Gypsy investors recieve dividend payments", async () => {
+      //give the reit the money for the home
+
+      //give the reit the money for the home
+
+      const BN_HOME_PURCHASE_PRICE = convertToBNDecimals(
+        HOME_PURCHASE_PRICE,
+        await usdgToken.decimals()
+      );
+
+      await usdgToken.mint(reit.address, BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await reit.sendDividendGypsy(BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      //mint Gypsy
+
+      await gpsyToken.mint(investor, BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      //check if the profit wallet got the GYPSY
+
+      //check if the vault got the GPSY
+      let balance_vault = await gpsyToken.balanceOf(lgpsyToken.address);
+
+      let backing = await reit.backingPerShare({
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      let amnt_usdg_converted = BN_HOME_PURCHASE_PRICE.mul(new BN(9)).div(
+        new BN(10)
+      );
+      let expected_balance_gypsy = amnt_usdg_converted.div(backing);
+      let dec = new BN(10);
+      let pow = new BN(18);
+      dec = dec.pow(pow);
+      let bn_expected_balance_gypsy = expected_balance_gypsy.mul(dec);
+
+      //give investor gpsy and stake it
+
+      await gpsyToken.mint(investor, BN_HOME_PURCHASE_PRICE, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+      await gpsyToken.approve(lgpsyToken.address, BN_HOME_PURCHASE_PRICE, {
+        from: investor,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+      await lgpsyToken.deposit(BN_HOME_PURCHASE_PRICE, investor, {
+        from: investor,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      //test the vesting period and issuance
+      const VESTING_PERIOD = 2592000;
+
+      let a = ethers.BigNumber.from(VESTING_PERIOD);
+      await lgpsyToken.updateVestingSchedule(VESTING_PERIOD);
+
+      let issuance = await lgpsyToken.issuanceRate();
+
+      expect(issuance).to.be.bignumber.not.equal(new BN(0));
     });
   });
 });

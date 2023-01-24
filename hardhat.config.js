@@ -14,20 +14,8 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: false,
     },
-    mainnet: {
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${DEPLOYER_PK}`, `0x${OPERATIONS_PK}`, `0x${GYPSY_PK}`],
-    },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${DEPLOYER_PK}`, `0x${OPERATIONS_PK}`, `0x${GYPSY_PK}`],
-    },
-    mumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${DEPLOYER_PK}`, `0x${OPERATIONS_PK}`, `0x${GYPSY_PK}`],
-    },
-    polygon: {
-      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [`0x${DEPLOYER_PK}`, `0x${OPERATIONS_PK}`, `0x${GYPSY_PK}`],
     },
   },

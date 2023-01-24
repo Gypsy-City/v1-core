@@ -132,17 +132,15 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 		//make sure the person is able to pay for the rent
 		uint256 allowance_this_contract = usdg_token.allowance(msg.sender, address(this));
 		uint256 allowance_reit_contract = usdg_token.allowance(msg.sender, address(reit));
-		require(_rent_amount <= allowance_this_contract, "Please approve tokens before transferring");
-		require(balance_to_rent_to_own <= allowance_reit_contract, "Please approve tokens before transferring");
+		require(_rent_amount <= allowance_this_contract, "Please approve home spending tokens before transferring");
+		require(balance_to_rent_to_own <= allowance_reit_contract, "Please approve reit spending tokens before transferring");
 
-		//the rest goes to the owner of the REIT
-		//pay the owner of the REIT
+		//send rent payment
 		usdg_token.transferFrom(msg.sender,owner_of, balance_to_send_to_owner);
-		//sent the money to the HomeNFT so that it can buy the GPSY for you
-		usdg_token.transferFrom(msg.sender,address(this), balance_to_rent_to_own);
-		//buy the GPSY
+		
+		
+		//rent to own
 		usdg_token.approve(address(reit), balance_to_rent_to_own);
-
 		reit.buyTo(gypsy_token_amount, msg.sender);
 
 		//Updates the property settings

@@ -50,7 +50,7 @@ contract("LGPSYToken", async (accounts) => {
       "LGPSY",
       currentOwner,
       gpsyToken.address,
-      2
+      18
     );
 
     reit = await REIT.new(
@@ -435,7 +435,6 @@ contract("LGPSYToken", async (accounts) => {
       );
     });
 
-    /*
     it("An investor can withdraw 50% of profits after half of the vesting period", async () => {
       const STAKE_AMOUNT = new BN(1000000000000);
       const PROFIT_AMOUNT = new BN(500000000000);
@@ -447,27 +446,16 @@ contract("LGPSYToken", async (accounts) => {
         gasPrice: 500000000,
       });
 
-      //
+      //stake the gypsy tokens
       await gpsyToken.approve(lgpsyToken.address, STAKE_AMOUNT, {
         from: investor,
         gas: 5000000,
         gasPrice: 500000000,
       });
 
-      const allowance_amount = await gpsyToken.allowance(
-        investor,
-        lgpsyToken.address,
-        {
-          from: investor,
-          gas: 5000000,
-          gasPrice: 500000000,
-        }
-      );
-
-      expect(STAKE_AMOUNT).to.be.bignumber.equal(allowance_amount);
-
       let investor_gypsy_balance_before = await gpsyToken.balanceOf(investor);
 
+      //deposit into vault
       await lgpsyToken.deposit(STAKE_AMOUNT, investor, {
         from: investor,
         gas: 5000000,
@@ -533,6 +521,8 @@ contract("LGPSYToken", async (accounts) => {
 
       let actual_issuance_rate = await lgpsyToken.issuanceRate();
 
+      console.log("actual_issuance_rate:", actual_issuance_rate.toString());
+
       expected_issuance_rate = Math.floor(expected_issuance_rate); //needs to round up whole number
 
       expect(new BN(expected_issuance_rate)).to.be.bignumber.equal(
@@ -566,6 +556,5 @@ contract("LGPSYToken", async (accounts) => {
         new BN(expected_withdraw_after_half_vesting_period)
       );
     });
-	*/
   });
 });

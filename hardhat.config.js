@@ -6,8 +6,14 @@ require("solidity-coverage"); //calculates code coverage to ensure better testin
 require("hardhat-gas-reporter"); //calculates gas costs
 require("hardhat-deploy"); //helps with deployments
 require("hardhat-deploy-ethers"); //helps with deployments
+const { accounts } = require("./test-wallets");
 
-const { DEPLOYER_PK, OPERATIONS_PK, GYPSY_PK } = process.env;
+let { DEPLOYER_PK, OPERATIONS_PK, GYPSY_PK } = process.env;
+
+//for testing deployments
+DEPLOYER_PK = DEPLOYER_PK ? `0x${DEPLOYER_PK}` : accounts[0];
+OPERATIONS_PK = OPERATIONS_PK ? `0x${OPERATIONS_PK}` : accounts[1];
+GYPSY_PK = GYPSY_PK ? `0x${GYPSY_PK}` : accounts[2];
 
 module.exports = {
   networks: {
@@ -16,7 +22,7 @@ module.exports = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${DEPLOYER_PK}`, `0x${OPERATIONS_PK}`, `0x${GYPSY_PK}`],
+      accounts: [DEPLOYER_PK, OPERATIONS_PK, GYPSY_PK],
     },
   },
   namedAccounts: {

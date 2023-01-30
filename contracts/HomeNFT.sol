@@ -204,62 +204,6 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
                       	Finacials
     ////////////////////////////////////////////////////////*/
 
-  	function occupancyRate()
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function netOperatingIncome(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function operatingExpenses(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function capRate(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	//Vacancy Rate = Number of Days Vacant / 365 Days per Year
-	function vacancyRate(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function depreciation(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function irr(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
-
-	function coc(uint256 homeID)
-        public 
-        returns (uint256)
-    {
-        return 1;
-    }
 	
 	/*////////////////////////////////////////////////////////
                       Getters

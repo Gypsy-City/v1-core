@@ -6,8 +6,7 @@ import "./TestGPSY.sol";
 import "./USDGToken.sol";
 import "./HomeNFT.sol";
 import "./LGPSYToken.sol";
-
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /** 
 
@@ -29,7 +28,7 @@ REIT REQUIREMENTS
 	-Derive at least 75 percent of its gross income from real estate related sources, including rents from real property and interest on mortgages financing real property
 */
 
-contract REIT is IERC721Receiver {
+contract REIT is IERC721Receiver, Ownable {
     address public admin;
 
     //Wallet connections

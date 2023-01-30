@@ -11,9 +11,9 @@ const { accounts } = require("./test-wallets");
 let { DEPLOYER_PK, OPERATIONS_PK, GYPSY_PK } = process.env;
 
 //for testing deployments
-DEPLOYER_PK = DEPLOYER_PK ? `0x${DEPLOYER_PK}` : accounts[0];
-OPERATIONS_PK = OPERATIONS_PK ? `0x${OPERATIONS_PK}` : accounts[1];
-GYPSY_PK = GYPSY_PK ? `0x${GYPSY_PK}` : accounts[2];
+DEPLOYER_PK = DEPLOYER_PK ? `0x${DEPLOYER_PK}` : accounts[0].secretKey;
+OPERATIONS_PK = OPERATIONS_PK ? `0x${OPERATIONS_PK}` : accounts[1].secretKey;
+GYPSY_PK = GYPSY_PK ? `0x${GYPSY_PK}` : accounts[2].secretKey;
 
 module.exports = {
   networks: {

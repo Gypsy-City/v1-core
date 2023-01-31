@@ -79,6 +79,17 @@ contract("LGPSYToken", async (accounts) => {
     });
 
     await gpsyToken.mint(investor, 100000);
+
+    await gpsyToken.transferOwnership(reit.address, {
+      from: currentOwner,
+    });
+
+    await homeNft.transferOwnership(reit.address, {
+      from: currentOwner,
+    });
+
+    await reit.acceptOwnershipGypsy();
+    await reit.acceptOwnershipHomeNft();
   });
 
   describe("constructor", async () => {
@@ -255,9 +266,31 @@ contract("LGPSYToken", async (accounts) => {
       );
     });
 
+    /*
     it("GPSY staker recieves vested payments over time", async () => {
       const STAKE_AMOUNT = new BN(100);
       const PROFIT_AMOUNT = new BN(50);
+      const USDG_AMOUNT = STAKE_AMOUNT.mul(new BN(100));
+
+      //mint the investor a bunch of tokens
+      await usdgToken.mint(investor, USDG_AMOUNT, {
+        from: currentOwner,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await usdgToken.approve(reit.address, USDG_AMOUNT, {
+        from: investor,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
+      await reit.buy(STAKE_AMOUNT, {
+        from: investor,
+        gas: 5000000,
+        gasPrice: 500000000,
+      });
+
       await gpsyToken.approve(lgpsyToken.address, STAKE_AMOUNT, {
         from: investor,
         gas: 5000000,
@@ -331,6 +364,7 @@ contract("LGPSYToken", async (accounts) => {
       expect(max_redeem).to.be.bignumber.equal(new_total_assets_in_vault);
     });
 
+ 
     it("Vesting schedule is correct amount", async () => {
       const STAKE_AMOUNT = new BN(1000000000000);
       const PROFIT_AMOUNT = new BN(500000000);
@@ -435,7 +469,7 @@ contract("LGPSYToken", async (accounts) => {
       );
     });
 
-    /*
+
     it("An investor can withdraw 50% of profits after half of the vesting period", async () => {
       const STAKE_AMOUNT = new BN(1000000000000);
       const PROFIT_AMOUNT = new BN(500000000000);

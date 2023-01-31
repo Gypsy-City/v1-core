@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "./TestGPSY.sol";
 import "./USDGToken.sol";
 import "./REIT.sol";
-
 import "hardhat/console.sol";
 
 /** 
@@ -23,7 +22,7 @@ import "hardhat/console.sol";
 		 This contract also mints & burns GPSY tokens that are backed by the homes values.
 */
 
-contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
+contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable2Step {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 	using Counters for Counters.Counter;
 	
@@ -74,7 +73,7 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
             	 Adding/Removing Homes Logic
     ////////////////////////////////////////////////////////*/
     function mint(address _owner, string memory tokenURI, uint256 _rent_price, uint256 _purchase_price )
-        public
+        public onlyOwner
         returns (uint256)
     {
 	

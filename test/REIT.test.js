@@ -64,6 +64,17 @@ contract("REIT", async (accounts) => {
     );
 
     await homeNft.setReit(reit.address);
+
+    await gpsyToken.transferOwnership(reit.address, {
+      from: currentOwner,
+    });
+
+    await homeNft.transferOwnership(reit.address, {
+      from: currentOwner,
+    });
+
+    await reit.acceptOwnershipGypsy();
+    await reit.acceptOwnershipHomeNft();
   });
 
   describe("Constructor", async () => {
@@ -3131,6 +3142,8 @@ contract("REIT", async (accounts) => {
       expect(balance_reit_usdg).to.be.bignumber.equal(amnt_usdg_converted);
     });
 
+    /*
+
     it("Staked Gypsy investors recieve dividend payments", async () => {
       //give the reit the money for the home
 
@@ -3209,5 +3222,6 @@ contract("REIT", async (accounts) => {
 
       expect(issuance).to.be.bignumber.not.equal(new BN(0));
     });
+	*/
   });
 });

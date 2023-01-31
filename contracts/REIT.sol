@@ -7,6 +7,7 @@ import "./USDGToken.sol";
 import "./HomeNFT.sol";
 import "./LGPSYToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 /** 
 
@@ -174,7 +175,7 @@ contract REIT is IERC721Receiver, Ownable {
     ////////////////////////////////////////////////////////*/
 
     /// @notice asks for money from the treasury for the operation wallet
-    function request(uint256 amount) public {
+    function request(uint256 amount) public onlyOwner {
         uint256 balance_to_send = usdg_token.balanceOf(address(this));
         require(balance_to_send >= amount, "Insufficient balance for request");
         usdg_token.transfer(operations_wallet, amount);
@@ -184,7 +185,7 @@ contract REIT is IERC721Receiver, Ownable {
 
     /// @notice Distributes profits to staked investors and gypsy
     /// @dev Called by Gypsy
-    function sendDividend() public returns (uint256) {
+    function sendDividend() public onlyOwner returns (uint256)  {
         //Sends 10% of the profits to the REIT
         //Sends 90% of the profits to the investors
 
@@ -206,7 +207,7 @@ contract REIT is IERC721Receiver, Ownable {
 
 	/// @notice Distributes profits to staked investors and gypsy
     /// @dev Called by Gypsy
-    function sendDividendGypsy(uint256 balance_to_send) public returns (uint256) {
+    function sendDividendGypsy(uint256 balance_to_send) public onlyOwner returns (uint256) {
         //Sends 10% of the profits to the REIT
         //Sends 90% of the profits to the investors
 
@@ -250,7 +251,7 @@ contract REIT is IERC721Receiver, Ownable {
         string memory tokenURI,
         uint256 _rent_price,
         uint256 _purchase_price
-    ) public returns (bool) {
+    ) public onlyOwner returns (bool) {
         //add home NFT
         home_nft.mint(address(this), tokenURI, _rent_price, _purchase_price);
 
@@ -261,7 +262,7 @@ contract REIT is IERC721Receiver, Ownable {
     function appraiseHome(
         uint256 homeID,
         uint256 new_apprasial_price
-    ) public returns (bool) {
+    ) public onlyOwner returns (bool) {
         //add home NFT
         home_nft.setAppraisalPrice(homeID, new_apprasial_price);
         return true;
@@ -316,4 +317,22 @@ contract REIT is IERC721Receiver, Ownable {
     ) external override returns (bytes4) {
 		return IERC721Receiver.onERC721Received.selector;
 	}
+
+    /*////////////////////////////////////////////////////////
+            	  Ownership
+    ////////////////////////////////////////////////////////*/
+
+	function acceptOwnershipGypsy() public onlyOwner{
+		gypsy_token.acceptOwnership();
+	}
+	function acceptOwnershipHomeNft() public onlyOwner{
+		home_nft.acceptOwnership();
+	}
+
+	function burnHome(uint256 num) public onlyOwner{
+		home_nft.burn(num);
+	}
+
 }
+
+

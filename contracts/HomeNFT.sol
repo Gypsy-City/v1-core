@@ -96,7 +96,7 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
         return 0;
     }
 
-	function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+	function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) onlyOwner {
         super._burn(tokenId);
     }
 
@@ -273,7 +273,7 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 
 	//Sets a new rent price for a home
 	function setRent(uint256 homeID, uint256 new_rent_price)
-        public 
+        public onlyOwner
     {
 		uint256 old_rent_price = rent_price[homeID];
 		rent_price[homeID] = new_rent_price;
@@ -283,7 +283,7 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 
 	//Sets a new Apprasial price for a home
 	function setAppraisalPrice(uint256 homeID, uint256 new_apprasial_price)
-        public 
+        public onlyOwner
     {
 		uint256 old_appraisal_price = appraisal_price[homeID];
 		appraisal_price[homeID] = new_apprasial_price;
@@ -291,22 +291,13 @@ contract HomeNFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, 
 		emit  AppraisalUpdated( homeID, old_appraisal_price, new_apprasial_price, msg.sender);
     }
 
-	function setReit(address _reit_contract) public{
+	function setReit(address _reit_contract) public onlyOwner{
 		reit = REIT(_reit_contract);
 	}
 
-	function setRentCycle(uint256 new_rent_cycle) public{
+	function setRentCycle(uint256 new_rent_cycle) public onlyOwner{
 		RENT_CYCLE = new_rent_cycle;
 	}
-
-	//Sets a new rent price for a home
-	function addRecurringPayment(uint256 homeId, uint16 bill_code, uint256 monthly_cost)
-        public 
-    {
-		EnumerableMap.Bytes32ToUintMap storage bills = recurring_maintance_costs[homeId];
-		//bool a = bills.set(bills, bill_code,monthly_cost);
-    }
-
 
    /*////////////////////////////////////////////////////////
             	 ERC721 Open Zeppelin overrides

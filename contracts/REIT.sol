@@ -333,6 +333,19 @@ contract REIT is IERC721Receiver, Ownable {
 		home_nft.burn(num);
 	}
 
+	function setRent(uint256 id, uint256 price) public onlyOwner{
+		home_nft.setRent(id, price);
+	}
+
+	function setAppraisalPrice(uint256 id, uint256 price) public onlyOwner{
+		home_nft.setAppraisalPrice(id, price);
+	}
+
+	function setRentCycle(uint256 cycle) public onlyOwner{
+		home_nft.setRentCycle(cycle);
+	}
+
+
 }
 
 

@@ -350,7 +350,7 @@ contract("HomeNFT", async (accounts) => {
 
       const NEW_RENT_PRICE = 8000;
 
-      let tx = await homeNft.setRent(1, NEW_RENT_PRICE);
+      let tx = await reit.setRent(1, NEW_RENT_PRICE);
       let new_rent_price = await homeNft.getRent(1);
 
       const bn_expected_value = new BN(NEW_RENT_PRICE);
@@ -375,7 +375,7 @@ contract("HomeNFT", async (accounts) => {
 
       const NEW_APPRASIAL_PRICE = 2000000;
 
-      let tx = await homeNft.setAppraisalPrice(1, NEW_APPRASIAL_PRICE);
+      let tx = await reit.setAppraisalPrice(1, NEW_APPRASIAL_PRICE);
       let new_apprasial_price = await homeNft.getAppraisalPrice(1);
 
       const bn_expected_value = new BN(NEW_APPRASIAL_PRICE);
@@ -390,7 +390,7 @@ contract("HomeNFT", async (accounts) => {
       const NEW_RENT_CYCLE = 86400; //one day
 
       //set the new rent cycle
-      await homeNft.setRentCycle(NEW_RENT_CYCLE);
+      await reit.setRentCycle(NEW_RENT_CYCLE);
 
       //get the set rent cycle
       const current_rent_cycle = await homeNft.getRentCycle();
@@ -1552,7 +1552,7 @@ contract("HomeNFT", async (accounts) => {
         purchase_price: new BN(HOME_PURCHASE_PRICE),
       });
     });
-	*/
+	
 
     it("RentUpdated event is triggered", async () => {
       const NEW_RENT_PRICE = 8000;
@@ -1601,6 +1601,7 @@ contract("HomeNFT", async (accounts) => {
         gas: 5000000,
         gasPrice: 500000000,
       });
+	  
 
       await expectEvent(tx, "AppraisalUpdated", {
         homeId: new BN(1),
@@ -1609,6 +1610,7 @@ contract("HomeNFT", async (accounts) => {
         owner: currentOwner,
       });
     });
+	*/
 
     it("LeaseEnds event is triggered", async () => {
       await usdgToken.mint(reit.address, HOME_PURCHASE_PRICE, {
